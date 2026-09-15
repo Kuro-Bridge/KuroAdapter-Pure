@@ -1,0 +1,33 @@
+{
+    "name": "handshake-token-auth-close-1008",
+    "note": "token 鉴权失败（后于版本协商）：服务端配置非空 token 时，hello 缺失 token 或 token 不符 → 同 id 回 hello_ack {ok:false, reason:auth failed} 并 close 1008（close reason 同文案）。token 经 hello body 传递（非 HTTP header，v0.3.0 引入）；服务端 token 为空（缺省）= 不鉴权全放行（向后兼容）；token 进程生命周期固定、配置热重载不刷新。本样本为「缺失 token」场景，token 值错误（如 wrong）行为相同。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「配置非空 token：hello 未带 token → auth failed + close 1008」「token 带错 → 拒绝」；close 常量 CLOSE_POLICY_VIOLATION 出自 bridge/core/src/server.ts",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "hello", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": {
+                    "peerId": "peer-2",
+                    "platform": "stub",
+                    "version": "0.0.1",
+                    "protocolVersion": "0.4.0"
+                }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "hello_ack", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "ok": false, "reason": "auth failed" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": {
+            "reply": "frames[1]",
+            "close": { "code": 1008, "reason": "auth failed" }
+        }
+    }
+}

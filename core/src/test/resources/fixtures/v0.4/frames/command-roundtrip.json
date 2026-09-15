@@ -1,0 +1,28 @@
+{
+    "name": "frames-command-roundtrip",
+    "note": "群指令请求-响应（UUID id 关联，ADR-010/ADR-025）：command 为请求帧（id 必填），body.command 不含前导斜杠；source.userId = 群成员标识（QQ 号），管理员判定在服务端（(channel, userId) 命中 admins 配置才执行）。服务端同 id 回 command_result：ok 体 output 为输出行数组（无输出时字段可缺省）；error 体如 {ok:false, error:forbidden}（非管理员，见 frames/command-result-forbidden）。执行者名义为服务器控制台。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「已注册 handler：body 交给 handler，resolve 值按同 id 回 command_result」+ docs/protocol/peer-guide.md §5.1/§9 时序示例",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "command", "id": "c0ffee00-0000-4000-8000-000000000001" },
+                "body": {
+                    "command": "whitelist list",
+                    "source": { "channel": "114514", "userId": "10001" }
+                }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "command_result", "id": "c0ffee00-0000-4000-8000-000000000001" },
+                "body": { "ok": true, "output": ["There are 1 whitelisted player(s): Steve"] }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": "frames[1]", "close": null }
+    }
+}

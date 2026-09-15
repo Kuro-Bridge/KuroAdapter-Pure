@@ -1,0 +1,18 @@
+{
+    "name": "frames-command-result-forbidden",
+    "note": "command_result 的 error 分支样本：非管理员（(channel, userId) 未命中 admins 配置）发起 command 时，服务端不触发执行、同 id 回 {ok:false, error:forbidden}。其它 error 取值：command handler not available（业务处理未注册）、IPC 执行超时/失败消息透传（全量线场景）。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/relay.test.ts 管理员判定用例（forbidden）+ bridge/core/src/__tests__/server.test.ts「未注册 handler → command handler not available」",
+    "frames": [
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "command_result", "id": "c0ffee00-0000-4000-8000-000000000002" },
+                "body": { "ok": false, "error": "forbidden" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": null, "close": null }
+    }
+}

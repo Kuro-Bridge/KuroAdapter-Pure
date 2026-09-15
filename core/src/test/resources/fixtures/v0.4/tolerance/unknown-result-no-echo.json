@@ -1,0 +1,19 @@
+{
+    "name": "tolerance-unknown-result-no-echo",
+    "note": "未知帧容忍·响应分支（防乒乓）：type 未知但以 _result 结尾（对端回了个服务端不认识的响应）→ 不回执（防止「响应回执响应」无限循环），仅 debug 日志，永不断连。wire 骨架合法，dispatch 段拒绝。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「未知 _result 帧 → 不回执（防乒乓循环），不 close」",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "mystery_result", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "ok": true }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "reject",
+        "reject": { "stage": "dispatch" },
+        "behavior": { "reply": null, "close": null }
+    }
+}

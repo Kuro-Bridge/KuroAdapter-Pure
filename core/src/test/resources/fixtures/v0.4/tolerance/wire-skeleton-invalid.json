@@ -1,0 +1,32 @@
+{
+    "name": "tolerance-wire-skeleton-invalid",
+    "note": "两段式解析第一段拒绝样本（ADR-026）：wireFrameSchema 只验线格式骨架——header.type 必须 snake_case、id 存在时必须 UUID、header 必填。三帧分别在 type 大小写、id 非 UUID、缺 header 处失败。行为：骨架失败 warn 丢弃、不回执、不断连（永不断连），但入帧本身仍会重置服务端空闲计时。dir 不影响 wire 阶段判定（列 peer->server 仅为消费方测试便利）。",
+    "source": "KuroAdapter@59d3be7 bridge/protocol/src/index.test.ts「只约束骨架，body 任意」反例（id not-a-uuid 拒绝）+ bridge/core/src/server.ts 两段式解析实现",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "Hello" },
+                "body": { "channel": "114514" }
+            }
+        },
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "chat", "id": "not-a-uuid" },
+                "body": { "channel": "114514" }
+            }
+        },
+        {
+            "dir": "peer->server",
+            "frame": {
+                "body": { "channel": "114514" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "reject",
+        "reject": { "stage": "wire" },
+        "behavior": { "reply": null, "close": null }
+    }
+}

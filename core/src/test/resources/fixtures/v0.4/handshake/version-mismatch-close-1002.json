@@ -1,0 +1,33 @@
+{
+    "name": "handshake-version-mismatch-close-1002",
+    "note": "版本协商失败（先于鉴权，两种失败以 close code 区分）：hello.protocolVersion 主版本与服务端不同（9.x vs 0.x）→ 同 id 回 hello_ack error（reason 模板：protocol version mismatch: peer=<对端版本>）随后 close 1002（close reason 同文本）。注意 9.9.9 是格式合法的 hello（schema 层通过），拒绝发生在协商行为层——两段式解析的体现。主版本相同的 0.2.0/0.3.1 等不触发本路径（ADR-026 兼容区间）；protocolVersion 格式非法（不匹配 semver 三元组正则）则 hello 校验直接失败、不回执、10s 超时 1002。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「协议版本不匹配 → hello_ack error + 关连接（1002）」「版本协商兼容区间（v0.3.0，ADR-026）」；reason 模板出自 bridge/core/src/server.ts",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "hello", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": {
+                    "peerId": "peer-1",
+                    "platform": "stub",
+                    "version": "0.0.1",
+                    "protocolVersion": "9.9.9"
+                }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "hello_ack", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "ok": false, "reason": "protocol version mismatch: peer=9.9.9" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": {
+            "reply": "frames[1]",
+            "close": { "code": 1002, "reason": "protocol version mismatch: peer=9.9.9" }
+        }
+    }
+}

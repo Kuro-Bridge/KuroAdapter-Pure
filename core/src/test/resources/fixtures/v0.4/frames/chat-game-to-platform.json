@@ -1,0 +1,18 @@
+{
+    "name": "frames-chat-game-to-platform",
+    "note": "游戏聊天（服务器→平台方向）：事件帧无 id，body 字段为 playerName（与平台→游戏方向的 sender 区分；同 type 不同 body，按方向校验）。fan-out 语义：服务端按绑定频道一频道一帧；status 例外（无 channel，全体对端都收）。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「sendGameChat 推给已握手对端并返回送达数」+ bridge/protocol/src/messages/ws.test.ts「游戏聊天与平台聊天各自通过自己的 schema」",
+    "frames": [
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "chat" },
+                "body": { "channel": "114514", "playerName": "Steve", "content": "大家好" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": null, "close": null }
+    }
+}

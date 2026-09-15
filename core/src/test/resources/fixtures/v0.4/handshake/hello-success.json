@@ -1,0 +1,38 @@
+{
+    "name": "handshake-hello-success",
+    "note": "单程握手成功（ADR-023）：WS 升级后对端 10s 内发 hello（请求帧，id 必填 UUID），服务端同 id 回 hello_ack ok——携带服务端身份与 channelBindings 完整快照（可为空数组）。protocolVersion 主版本相同即兼容（ADR-026）：0.2.x/0.3.x 对端同样握手成功，ack 回服务端实际版本（此处 0.4.0）。token（0.3.0）/ client（0.3.1）为可选字段。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「合法 hello → hello_ack ok（携带服务端身份与 channelBindings）」+ bridge/protocol/src/messages/ws.test.ts「hello 的 client 可选（v0.3.1）」+ docs/protocol/peer-guide.md §9 时序示例",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "hello", "id": "3f9d2c1e-8b4a-4c3e-9a2d-7f1e5b6c8d90" },
+                "body": {
+                    "peerId": "napuketto-01",
+                    "platform": "napukettoqq",
+                    "version": "1.0.0",
+                    "protocolVersion": "0.4.0",
+                    "token": "s3cret",
+                    "client": "napukettoqq/1.0"
+                }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "hello_ack", "id": "3f9d2c1e-8b4a-4c3e-9a2d-7f1e5b6c8d90" },
+                "body": {
+                    "ok": true,
+                    "serverId": "srv-1",
+                    "version": "0.1.0",
+                    "protocolVersion": "0.4.0",
+                    "channelBindings": ["114514", "1919810"]
+                }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": "frames[1]", "close": null }
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "name": "frames-heartbeat-ping-pong",
+    "note": "业务心跳（0.1.0 初始帧集）：对端周期发 ping（请求帧，id 必填，建议 5-15s），服务端同 id 回 pong、body.timestamp 原样回显（整数 ≥0，可测往返延迟）。服务端不主动发 ping、不做 pong 超时判定——活性兜底靠服务端空闲检测：任何入帧（含校验失败的帧）重置计时，缺省 30s 无入帧 close 1001（reason: idle timeout）。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts ping/pong 用例（timestamp 123456 原样回带）+ bridge/core/src/server.ts DEFAULT_IDLE_TIMEOUT_MS = 30_000 + docs/protocol/peer-guide.md §4/§9",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "ping", "id": "a1b2c3d4-1111-4222-8333-444455556666" },
+                "body": { "timestamp": 1760000000000 }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "pong", "id": "a1b2c3d4-1111-4222-8333-444455556666" },
+                "body": { "timestamp": 1760000000000 }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": "frames[1]", "close": null }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "name": "tolerance-unknown-event-ignored",
+    "note": "未知帧容忍·事件分支：type 未知、无 id（事件形态）→ 服务端忽略不回执（仅 debug 日志），永不断连。wire 骨架合法（type 符合 snake_case 正则），dispatch 段因 type 不在 WS_INBOUND_TYPES 拒绝。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「未知事件帧 → 忽略，不 close」",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "stub_unknown_event" },
+                "body": {}
+            }
+        }
+    ],
+    "expect": {
+        "schema": "reject",
+        "reject": { "stage": "dispatch" },
+        "behavior": { "reply": null, "close": null }
+    }
+}

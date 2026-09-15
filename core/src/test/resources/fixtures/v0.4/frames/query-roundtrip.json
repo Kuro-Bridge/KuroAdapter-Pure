@@ -1,0 +1,25 @@
+{
+    "name": "frames-query-roundtrip",
+    "note": "查询请求-响应（0.3.0 引入）：query 为请求帧，kind 枚举 status | bindings。kind=bindings 时 query_result ok 体 data 为频道绑定实时快照（string[] 完整列表）；kind=status 时 data 为 {tps, onlinePlayers, uptimeSeconds}（与 status 事件同构），服务端尚无缓存时回 {ok:false, error:no status yet}。data 形状由 kind 决定，协议层不强校验。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts query 族用例（kind=bindings / kind=status / no status yet）+ docs/protocol/peer-guide.md §9 时序示例",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "query", "id": "c0ffee00-0000-4000-8000-000000000003" },
+                "body": { "kind": "bindings" }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "query_result", "id": "c0ffee00-0000-4000-8000-000000000003" },
+                "body": { "ok": true, "data": ["114514", "1919810"] }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": "frames[1]", "close": null }
+    }
+}

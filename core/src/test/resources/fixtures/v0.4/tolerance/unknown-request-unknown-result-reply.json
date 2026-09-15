@@ -1,0 +1,26 @@
+{
+    "name": "tolerance-unknown-request-unknown-result-reply",
+    "note": "未知帧容忍·请求分支（ADR-026，0.3.0）：type 不在 WS_INBOUND_TYPES 且不以 _result 结尾、header 带 UUID id → 视为未知请求帧，服务端回同 id 的 <type>_result {ok:false, error:unknown frame type}，永不断连（无阈值计数）。该容忍在握手前同样生效。两帧在 dispatch 段均为未知 type（wire 骨架均合法），回执帧本身也受 schema 门禁覆盖（outbound 已知集合同样不含 stub_unknown_result）。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts「未知请求帧 → 回 <type>_result unknown frame type，不断连」「容忍在握手前同样生效（probe）」",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "stub_unknown", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "any": 1 }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "stub_unknown_result", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "ok": false, "error": "unknown frame type" }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "reject",
+        "reject": { "stage": "dispatch" },
+        "behavior": { "reply": "frames[1]", "close": null }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "frames-bindings-updated",
+    "note": "绑定变更推送（0.2.0，ADR-004）：服务端配置热重载导致绑定集合变化时，向已握手对端推送 bindings_updated——channelBindings 为变更后完整列表（非增量）；集合未变不推送。对端也可随时 query kind=bindings 拉取快照。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/relay.test.ts「绑定集合变化 → 推送变更后完整列表给已握手对端」+ bridge/core/src/__tests__/server.test.ts bindings_updated 用例",
+    "frames": [
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "bindings_updated" },
+                "body": { "channelBindings": ["114514", "1919810", "233333"] }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": null, "close": null }
+    }
+}

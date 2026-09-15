@@ -1,0 +1,36 @@
+{
+    "name": "tolerance-known-type-invalid-body",
+    "note": "两段式解析第二段拒绝样本：type 已知（chat/chat/command 属 WS_INBOUND_TYPES）但具体 schema 校验失败。三帧分别：chat 的 content 为空串（违反 min(1)）；chat 事件帧携带 id（事件帧 header 为 strictObject，带 id 即拒——尽早暴露方向用错）；command 请求帧缺 id（请求帧 id 必填 UUID）。行为：warn 丢弃、不回执、不断连；空闲计时仍被重置。",
+    "source": "KuroAdapter@59d3be7 bridge/protocol/src/frame.ts（eventFrameSchema 的 strictObject header）+ bridge/protocol/src/messages/ws.test.ts 非法载荷反例 + bridge/core/src/server.ts「已知 type 但校验失败 → warn 丢弃」",
+    "frames": [
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "chat" },
+                "body": { "channel": "114514", "sender": "群友A", "content": "" }
+            }
+        },
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "chat", "id": "123e4567-e89b-12d3-a456-426614174000" },
+                "body": { "channel": "114514", "sender": "群友A", "content": "大家好" }
+            }
+        },
+        {
+            "dir": "peer->server",
+            "frame": {
+                "header": { "type": "command" },
+                "body": {
+                    "command": "whitelist list",
+                    "source": { "channel": "114514", "userId": "10001" }
+                }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "reject",
+        "reject": { "stage": "dispatch" },
+        "behavior": { "reply": null, "close": null }
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "name": "frames-game-events",
+    "note": "游戏事件四联样本（均服务端→对端事件帧，无 id，按绑定频道 fan-out）：join/leave 用 playerName；death 字段名是 player（历史原因，非 playerName）且 message 允许空串（deathMessage 为 null 时空串兜底）；status 无 channel（全服状态，全体对端都收；事件驱动推送——玩家进出服时，无周期上报）。字段约束：tps ≥0、onlinePlayers/uptimeSeconds 为非负整数。",
+    "source": "KuroAdapter@59d3be7 bridge/core/src/__tests__/server.test.ts v0.2 事件帧用例（join/leave/status）+ bridge/core/src/__tests__/relay.test.ts death fan-out 用例 + docs/protocol/peer-guide.md §9 时序示例",
+    "frames": [
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "join" },
+                "body": { "channel": "114514", "playerName": "Alex" }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "leave" },
+                "body": { "channel": "114514", "playerName": "Steve" }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "death" },
+                "body": { "channel": "114514", "player": "Steve", "message": "Steve fell from a high place" }
+            }
+        },
+        {
+            "dir": "server->peer",
+            "frame": {
+                "header": { "type": "status" },
+                "body": { "tps": 20, "onlinePlayers": 2, "uptimeSeconds": 3600 }
+            }
+        }
+    ],
+    "expect": {
+        "schema": "accept",
+        "behavior": { "reply": null, "close": null }
+    }
+}

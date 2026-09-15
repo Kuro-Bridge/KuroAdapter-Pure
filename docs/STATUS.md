@@ -15,9 +15,11 @@
 
 ## 门禁结果
 
-- `mise exec java@25 -- ./gradlew build`：全绿（spotlessCheck + 全部测试）
-- 测试：`:core` 共 7 个测试类 / **87 个用例**，全部通过（含 16 份金样本逐份消费）
-- 首次全绿提交后本节数据随 `test:` 提交回填核实
+- `mise exec java@25 -- ./gradlew build`：**全绿**（compile `-Xlint:all -Werror` + spotlessCheck + 全部测试）
+- 测试：`:core` 共 6 个测试类 / **78 个用例**，0 失败 0 跳过：
+  - PeerSessionTest 34 / FrameCodecTest 13 / ConfigLoaderTest 9 / PureWsServerTest 3（回环真机自测）
+  - VersionCompatTest 3 / **FixtureConformanceTest 16**（KuroProtocol v0.4 金样本逐份动态消费，
+    含 7 份行为断言：握手三份 + 心跳/指令/查询往返 + 未知请求回执）
 
 ## 下一阶段清单
 
