@@ -90,7 +90,7 @@ com.kurobridge.pure.core
 | hello | P→S | 请求(id) | peerId/platform/version 非空；protocolVersion `^\d+\.\d+\.\d+$`；token/client 可选 |
 | ping | P→S | 请求(id) | timestamp 整数 ≥0 |
 | chat | P→S | 事件 | channel/sender/content 均非空 |
-| command | P→S | 请求(id) | command 非空且**不含前导斜杠**；source.{channel,userId} 均非空 |
+| command | P→S | 请求(id) | command 非空（min(1)，对齐 zod SSOT）；source.{channel,userId} 均非空 |
 | query | P→S | 请求(id) | kind ∈ {status, bindings} |
 | hello_ack | S→P | 响应(同 id) | ok 体 {serverId,version 非空, protocolVersion 三元组, channelBindings: 非空串数组}；error 体 {reason 非空} |
 | pong | S→P | 响应(同 id) | timestamp 整数 ≥0 |
@@ -105,8 +105,9 @@ com.kurobridge.pure.core
 数值语义对齐 zod：`z.number().int()` 接受数学上整数的 `1.0`（Jackson 用 `canConvertToLong`
 判定），`tps` 为任意非负数值。
 
-> 注：主仓 zod 对 command 只强制 `min(1)`，「不含前导斜杠」在 peer-guide 中是对端约定；
-> 本仓按任务契约**收紧为拒绝前导斜杠**（合格对端本就不会发 `/cmd`，收紧不影响互操作）。
+> 注：主仓 zod（SSOT）对 command 只强制 `min(1)`——「不含前导斜杠」是 peer-guide 里的
+> **对端调用约定**（文档说明），协议层不校验、`"/list"` 照样放行交给后续链路（如需在业务层
+> 告警留给下一阶段）。两实现对齐 zod，避免跨实现可观察分叉。
 
 ### 2.3 握手状态机与收帧分发（PeerSession）
 

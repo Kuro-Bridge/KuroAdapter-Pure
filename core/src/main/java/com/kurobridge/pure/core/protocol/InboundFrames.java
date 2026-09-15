@@ -65,10 +65,9 @@ public final class InboundFrames {
         requireType(frame, "command");
         frame.requireRequestId();
         JsonNode body = JsonValidations.requireObject(frame.body());
+        // 只做 min(1) 非空校验（对齐 zod SSOT）——「不含前导斜杠」是对端调用约定（peer-guide
+        // 文档说明），协议层不拒绝，跨实现行为一致
         String command = JsonValidations.requireNonEmptyString(body, "command");
-        if (command.startsWith("/")) {
-            throw new FrameValidationException("command 不得含前导斜杠（不含 \"/\"，如 \"whitelist list\"）");
-        }
         JsonNode source = JsonValidations.requireObjectField(body, "source");
         return new CommandBody(
                 command,

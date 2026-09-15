@@ -424,7 +424,9 @@ class PeerSessionTest {
     }
 
     @Test
-    void command_前导斜杠_校验拒绝丢弃() {
+    void command_前导斜杠_通过协议层校验放行_交给业务链路() throws Exception {
+        // zod SSOT 只约束 min(1)：「不含前导斜杠」是对端约定（peer-guide 文档说明），
+        // 协议层不拒绝——避免跨实现可观察分叉（主仓 TS 同样放行 "/list"）
         Fakes.FakeConnection connection = new Fakes.FakeConnection();
         PeerSession session = established(connection);
 
@@ -432,8 +434,12 @@ class PeerSessionTest {
                 + "\"},\"body\":{\"command\":\"/whitelist list\","
                 + "\"source\":{\"channel\":\"114514\",\"userId\":\"10001\"}}}");
 
-        assertTrue(connection.sent().isEmpty());
-        assertTrue(hooks.commands().isEmpty());
+        assertEquals(1, hooks.commands().size());
+        assertEquals("/whitelist list", hooks.commands().get(0).command());
+        JsonNode result = json(connection.lastSent());
+        assertEquals("command_result", result.path("header").path("type").asText());
+        assertEquals(CMD_ID, result.path("header").path("id").asText());
+        assertFalse(result.path("body").path("ok").asBoolean());
     }
 
     @Test
