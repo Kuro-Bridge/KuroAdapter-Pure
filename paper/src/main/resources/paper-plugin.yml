@@ -1,0 +1,5 @@
+name: KuroBridgePure
+version: 0.1.0
+main: com.kurobridge.pure.KuroBridgePurePlugin
+api-version: "1.21"
+load: STARTUP
