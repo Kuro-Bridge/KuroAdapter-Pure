@@ -20,8 +20,9 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 
 ## 当前能力（分阶段现状，详见 docs/STATUS.md）
 
-已接线（回环单测 + 编译门禁验证；2026-09-18 另过一轮真机冒烟，见
-`docs/history/SMOKE-2026-09-18.md`）：
+已接线（回环单测 + 编译门禁验证；真机覆盖：2026-09-18 冒烟 `docs/history/SMOKE-2026-09-18.md`
++ 同日矩阵补格 `docs/history/SMOKE-2026-09-18-2.md`——command/query 往返、death、negate
+静音、vanilla 回退、reload、首启自生成、koishi 端到端均已真机实锤）：
 
 - 配置读取与首启自动生成（`plugins/KuroBridgePure/config.json`，见下方配置段）；
 - WS 服务端启动（子协议协商/握手/鉴权/心跳）+ 端口绑定失败 SEVERE 指路后中止启用；
@@ -31,10 +32,13 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 - 管理员命令判定（先于执行）+ MC 白名单网关（`dispatchCommand` CONSOLE 语义）；
 - `/kurobridge reload` 配置重载（channels/admins 热更，token/ws/server.id 待重启，见下）。
 
-未做（`docs/STATUS.md` 下一阶段清单）：
+未做（`docs/STATUS.md` 已知边界与残留）：
 
-- 真机联调收尾：冒烟已覆盖握手 + 双向 chat 与启停（Paper sandbox + koishi external），
-  command/query 往返、death、negate 静音、vanilla 回退与 koishi 侧端到端发送仍未上真机。
+- status 快照语义边界：leave 时推送的快照仍计入离开玩家（计数偏大），`query status`
+  返回该缓存、事件稀疏场景可滞后；
+- `version` 命令仅捕获同步首行输出，异步余量直落控制台；控制台 `say` 等非玩家聊天源
+  不转发（协议未承诺）；
+- 多版本平台模块（fabric/velocity 预留位）；koishi 对端仍在 0.1.0 线（对端升级属对端线）。
 
 ## 配置（plugins/KuroBridgePure/config.json）
 

@@ -4,7 +4,7 @@
 > :paper 接线设计见 `docs/history/PAPER-WIRING-2026-09-18.md`；
 > 配置落盘与安全默认裁决见 `docs/history/CONFIG-2026-09-18.md`。
 
-## 当前阶段：配置落盘与安全默认完成（首启生成 + token 门禁 + /kurobridge reload）
+## 当前阶段：配置落盘与安全默认 + 真机覆盖矩阵补齐完成
 
 - [x] `docs/design.md` 设计先行（分层 / 协议层类结构 / 线程模型 / 差异 / 依赖白名单）
 - [x] gradle 多模块骨架（`:core` / `:paper`，wrapper 9.7.0，spotless + shadow 约定）
@@ -60,17 +60,30 @@
      （join+chat+leave+status）/平台→游戏（chat→主线程广播）双侧日志实锤，二轮启动与
      优雅停用正常；平台→游戏的 koishi mock 注入路径被 koishi.db 既有数据阻断
      （UNIQUE 冲突，M7 已知），以协议合规 raw WS 客户端补证 Pure 侧全链；
-   - [ ] 指令全链路（command/query 往返、death、negate 静音、vanilla 回退）与
-     koishi external 端到端发送（先清 koishi-dev 沙盒 mock binding 行）；
+   - [x] 指令全链路与 koishi external 端到端（2026-09-18/19，
+     `docs/history/SMOKE-2026-09-18-2.md`）：矩阵 a–j 十格全过——command 往返（vanilla 回退 +
+     Bukkit 收集 + 非管理员 forbidden）/ query / death / negate 静音（LuckPerms false→静默→
+     true 恢复）/ bindings_updated（随 reload 尾格）/ koishi 真实 platform→game
+     （koishi.db mock 行先备份后清理解锁，备份在 koishi-dev/data/backup-line2-20260918/）；
+     尾格随块 A 合并态 jar 实证首启自生成 + 空 token 拒绝监听 + reload 热冷分组回执。
 5. **配置落盘**：[x] 已完成（2026-09-18，见上方「配置落盘与安全默认」勾组；README 配置段
    为用户面文档，热冷矩阵与首启行为以 `docs/history/CONFIG-2026-09-18.md` 裁决为准）。
 
 ## 已知边界与残留
 
-- 真机覆盖范围：冒烟（2026-09-18）已过握手 + 双向 chat 与启停路径；command/query/death/
-  negate/vanilla 回退未上真机（SMOKE 记录 §6）；
+- 真机覆盖范围：冒烟（SMOKE-2026-09-18）+ 矩阵补格（SMOKE-2026-09-18-2，a–j 十格全过）——
+  握手/双向 chat/command（含 vanilla 回退与 forbidden）/query/death/negate/bindings_updated/
+  reload/首启自生成/空 token 拒绝均已真机实锤；残留为语义级边界（下两条）；
+- status 快照语义：leave 时推送的快照仍计入离开玩家（计数偏大），`query status` 返回该
+  缓存、事件稀疏场景可滞后（协议文本允许；SMOKE-2 §6-3）；全新起服无事件时正确回
+  `no status yet`；
+- `version` 命令仅捕获同步首行输出（异步余量直落控制台，收集窗口设计边界，主仓同构）；
+  非玩家聊天源（控制台 `say`）不转发——ChatListener 仅接 AsyncChatEvent，协议未承诺
+  （SMOKE-2 §6-4/5）；
 - 不做多版本平台模块（fabric/velocity 预留位，见 settings.gradle.kts 注释）；
-- 协议常量为人工同步副本——协议 bump 须同步 KuroProtocol 并重新 pin fixtures；
+- 协议常量为人工同步副本——协议 bump 须同步 KuroProtocol 并发 npm 版后跑
+  `gradlew refreshFixtures` 从包内机械重取金样本（2026-09-18 起，手拷淘汰；见
+  core/src/test/resources/fixtures/PIN.md 与 FIXTURES-CONSUMER-2026-09-18.md）；
 - **本轮新发现/新引入的残留**：
   - `paper/build.gradle.kts` 补了 `log4j-core` compileOnly（运行期 Paper 自带，主仓同款）——
     AGENTS.md 红线 2 白名单已于 2026-09-18 补记该项（docs 块落地）；
