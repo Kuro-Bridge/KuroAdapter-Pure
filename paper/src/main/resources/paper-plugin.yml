@@ -7,9 +7,16 @@ api-version: "1.21"
 # 加载时机：服务端启动时（拉起 WS 服务端并注册监听器）
 load: STARTUP
 
-# 权限节点（ChatListener 消费）：default true = 全员可转发；
-# negate（设为 false）即静音——该玩家的聊天不再上报对端
+# 权限节点：
+# - kurobridge.relay（ChatListener 消费）：default true = 全员可转发；
+#   negate（设为 false）即静音——该玩家的聊天不再上报对端
+# - kurobridge.reload：/kurobridge reload 重载配置；default op，控制台恒可。
+#   注：paper-plugin.yml 在 Paper 1.21.4 不支持 commands 块，命令本体经
+#   LifecycleEvents.COMMANDS + BasicCommand 注册（KurobridgeCommand），此处仅声明权限节点
 permissions:
     kurobridge.relay:
         description: 消息互通权限（聊天转发）
         default: true
+    kurobridge.reload:
+        description: 重载 KuroBridgePure 配置（/kurobridge reload）
+        default: op

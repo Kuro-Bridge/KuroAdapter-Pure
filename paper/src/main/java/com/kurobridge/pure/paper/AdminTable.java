@@ -10,7 +10,8 @@ import java.util.Set;
 /**
  * 管理员映射（数据源 PureConfig.admins，ConfigLoader 已按 channel 去重保序）。
  * 判定规则（peer-guide §5.1 / 主仓 admins.ts）：source.channel 命中某条目且 source.userId
- * 在其 users 内 → 放行。不可变（配置静态；热重载落地后随 STATUS 第 5 条重建）。
+ * 在其 users 内 → 放行。表本身不可变；热重载 = 按新配置重建实例，经
+ * {@code PaperRelay.replaceAdmins} 原子换入（volatile）。
  */
 public final class AdminTable {
 

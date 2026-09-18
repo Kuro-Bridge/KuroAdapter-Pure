@@ -37,7 +37,7 @@ public final class PaperRelay implements BusinessHooks {
 
     private final BindingStore bindings;
     private final ForwardRules rules;
-    private final AdminTable admins;
+    private volatile AdminTable admins; // reload 重建后原子换入（volatile 写，下一次 command 判定即用新表）
     private final PaperCommandDispatcher commandDispatcher;
     private final KbLogger logger;
     private volatile PureWsServer server;
@@ -59,6 +59,11 @@ public final class PaperRelay implements BusinessHooks {
     /** PureWsServer 注入位（startAndWait 之后、监听器注册之前调用——无并发窗口）。 */
     public void attach(PureWsServer server) {
         this.server = server;
+    }
+
+    /** 管理员表原子换入（reload 用；volatile 交换，语义 = 下一次 command 判定即用新表）。 */
+    public void replaceAdmins(AdminTable next) {
+        this.admins = next;
     }
 
     // ---- 游戏→平台事件 fan-out（监听器调用；Bukkit 主线程或异步聊天线程）----
