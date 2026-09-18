@@ -114,6 +114,34 @@ class ConfigLoaderTest {
         assertEquals("", config.token());
         assertEquals(List.of(), config.admins());
         assertNull(config.ws());
+        assertEquals(PureConfig.DEFAULT_SERVER_ID, config.serverId());
+    }
+
+    // ---- server 段（可选根字段 server.id；进程固定，改后须重启）----
+
+    @Test
+    void serverId_缺省兜底默认_合法值保留() {
+        // 无 server 字段 / server 空对象 / id 显式 null → 一律兜底默认（主仓 ADR-034 形状）
+        assertEquals(
+                PureConfig.DEFAULT_SERVER_ID,
+                ConfigLoader.parse("{\"channels\":[]}").serverId());
+        assertEquals(
+                PureConfig.DEFAULT_SERVER_ID,
+                ConfigLoader.parse("{\"channels\":[],\"server\":{}}").serverId());
+        assertEquals(
+                PureConfig.DEFAULT_SERVER_ID,
+                ConfigLoader.parse("{\"channels\":[],\"server\":{\"id\":null}}").serverId());
+        assertEquals(
+                "my-server",
+                ConfigLoader.parse("{\"channels\":[],\"server\":{\"id\":\"my-server\"}}")
+                        .serverId());
+    }
+
+    @Test
+    void serverId_空串_非字符串_server非对象_抛ConfigException() {
+        assertThrows(ConfigException.class, () -> ConfigLoader.parse("{\"channels\":[],\"server\":{\"id\":\"\"}}"));
+        assertThrows(ConfigException.class, () -> ConfigLoader.parse("{\"channels\":[],\"server\":{\"id\":123}}"));
+        assertThrows(ConfigException.class, () -> ConfigLoader.parse("{\"channels\":[],\"server\":\"kurobridge\"}"));
     }
 
     @Test

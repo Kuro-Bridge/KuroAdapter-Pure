@@ -14,14 +14,16 @@ import java.util.Map;
 
 /**
  * 配置解析（纯函数）。行为对齐主仓 bridge/core/src/business/config.ts 的 parseConfig
- * （剔除 runtime/embedded 段）：channels/admins 各自去重保序；非法形状/内容抛 ConfigException。
+ * （剔除 runtime/embedded 段）：channels/admins 各自去重保序；server.id 缺省兜底
+ * {@link PureConfig#DEFAULT_SERVER_ID}；非法形状/内容抛 ConfigException。
  */
 public final class ConfigLoader {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final String EXPECTED_SHAPE =
-            "配置不合法（期望 { channels: string[], token?: string, admins?: {channel, users}[], ws?: { host?: string, port?: 1-65535 } }）";
+            "配置不合法（期望 { channels: string[], token?: string, admins?: {channel, users}[], "
+                    + "ws?: { host?: string, port?: 1-65535 }, server?: { id?: 非空字符串 } }）";
 
     private ConfigLoader() {}
 
@@ -56,7 +58,8 @@ public final class ConfigLoader {
         String token = parseToken(root.get("token"));
         List<PureConfig.AdminMapping> admins = parseAdmins(root.get("admins"));
         PureConfig.WsListen ws = parseWs(root.get("ws"));
-        return new PureConfig(channels, token, admins, ws);
+        String serverId = parseServer(root.get("server"));
+        return new PureConfig(channels, token, admins, ws, serverId);
     }
 
     private static List<String> parseChannels(JsonNode node) {
@@ -154,5 +157,26 @@ public final class ConfigLoader {
             port = (int) value;
         }
         return new PureConfig.WsListen(host, port); // 只配 host 不配 port = 动态端口 + 指定地址（合法）
+    }
+
+    /**
+     * server 段（可选根字段，对齐主仓 ADR-034 字段形状）：缺省/段内无 id → {@link PureConfig#DEFAULT_SERVER_ID}；
+     * 段非对象 / id 非字符串 / id 空串 → 抛 ConfigException（id 进程固定，改后须重启）。
+     */
+    private static String parseServer(JsonNode node) {
+        if (node == null || node.isNull()) {
+            return PureConfig.DEFAULT_SERVER_ID;
+        }
+        if (!node.isObject()) {
+            throw new ConfigException("server 必须是 { id?: 非空字符串 }");
+        }
+        JsonNode idNode = node.get("id");
+        if (idNode == null || idNode.isNull()) {
+            return PureConfig.DEFAULT_SERVER_ID;
+        }
+        if (!idNode.isTextual() || idNode.asText().isEmpty()) {
+            throw new ConfigException("server.id 必须是非空字符串");
+        }
+        return idNode.asText();
     }
 }

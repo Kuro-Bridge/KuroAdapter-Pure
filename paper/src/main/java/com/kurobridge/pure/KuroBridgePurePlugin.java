@@ -1,7 +1,8 @@
-// :paper 插件主类：生命周期装配（配置 → 绑定/调度/hooks → PureWsServer → 监听器注册）
+// :paper 插件主类：生命周期装配（配置引导 → 绑定/调度/hooks → PureWsServer → 监听器注册）
 package com.kurobridge.pure;
 
 import com.kurobridge.pure.core.business.ConfigBindingStore;
+import com.kurobridge.pure.core.business.ConfigBootstrap;
 import com.kurobridge.pure.core.business.ConfigException;
 import com.kurobridge.pure.core.business.ConfigLoader;
 import com.kurobridge.pure.core.business.ForwardRules;
@@ -19,7 +20,6 @@ import com.kurobridge.pure.paper.PaperCommandDispatcher;
 import com.kurobridge.pure.paper.PaperRelay;
 import com.kurobridge.pure.paper.PaperWhitelistGateway;
 import com.kurobridge.pure.paper.PluginKbLogger;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -28,15 +28,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * KuroBridgePure 插件入口（零协议逻辑——协议层与业务骨架在 :core，本类只做装配）。
  *
- * <p>onEnable：dataFolder 建目录 → 读配置（config.json 存在则加载；**非法配置 SEVERE 后中止
- * 启用**，不静默降级成「无 token 全接口监听」的安全敞口）→ 组装绑定表/调度器/hooks →
- * 启动 PureWsServer（动态端口时日志实际端口）→ 注册监听器三件 + 绑定变更监听。
- * onDisable：server.shutdown()（已握手对端 close 1001 "server shutdown"）+ 定时器收线。
+ * <p>onEnable：dataFolder 建目录 → 配置引导（config.json 缺失则生成安全默认，随后经
+ * ConfigLoader 单一权威解析；**非法配置/空 token/端口绑定失败一律 SEVERE 后中止启用**，
+ * 不静默降级、不给半工作状态）→ 组装绑定表/调度器/hooks → 启动 PureWsServer（动态端口时
+ * 日志实际端口）→ 注册监听器三件 + 绑定变更监听。onDisable：server.shutdown()（已握手对端
+ * close 1001 "server shutdown"）+ 定时器收线。
  */
 public final class KuroBridgePurePlugin extends JavaPlugin {
-
-    /** hello_ack 上报的服务器标识（主仓 embedded 同为常量 kurobridge-spike；配置化随 STATUS 第 5 条）。 */
-    private static final String SERVER_ID = "kurobridge-pure";
 
     private PureWsServer server;
     private ExecutorTimeoutScheduler timeoutScheduler;
@@ -44,7 +42,15 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        PureConfig config = loadConfig();
+        Path configFile = getDataFolder().toPath().resolve("config.json");
+        PureConfig config;
+        try {
+            config = loadOrCreateConfig(configFile);
+        } catch (ConfigException invalid) {
+            // D8 fail-fast：非法配置/生成失败/空 token 不静默降级——SEVERE 后中止启用（修正后重启）
+            getLogger().log(Level.SEVERE, invalid.getMessage(), invalid);
+            throw invalid;
+        }
 
         ConfigBindingStore bindings = new ConfigBindingStore(config.channels());
         PluginKbLogger logger = new PluginKbLogger(getLogger());
@@ -54,7 +60,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         whitelistGateway = new PaperWhitelistGateway(commandDispatcher); // 结构化未来用（ADR-027 同机制）
         timeoutScheduler = new ExecutorTimeoutScheduler();
         SessionContext context = new SessionContext(
-                SERVER_ID,
+                config.serverId(),
                 getPluginMeta().getVersion(),
                 config.token(),
                 bindings::boundChannels,
@@ -67,15 +73,25 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         PureConfig.WsListen ws = config.ws();
         String host = ws == null || ws.host() == null ? null : ws.host();
         int port = ws == null || ws.port() == null ? 0 : ws.port();
-        server = new PureWsServer(host, port, context);
+        PureWsServer wsServer = new PureWsServer(host, port, context);
         int actualPort;
         try {
-            actualPort = server.startAndWait();
+            actualPort = wsServer.startAndWait();
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("WS 服务端启动被中断", interrupted);
+        } catch (IllegalStateException startupFailed) {
+            // 端口被占/绑定超时：SEVERE 指路改 config 后重启。不回退动态端口——回退会静默破坏对端静态 url
+            getLogger()
+                    .severe(String.format(
+                            "WS 服务端启动失败：%s。指路：修改 %s 的 ws.port / ws.host（或释放被占端口）后重启服务器。",
+                            startupFailed.getMessage(), configFile));
+            throw startupFailed;
         }
-        relay.attach(server);
+
+        this.server = wsServer; // 启动成功才落字段（失败路径 onDisable 不误关半启动服务端）
+
+        relay.attach(wsServer);
         bindings.addChangeListener(relay::bindingsUpdated);
 
         Bukkit.getPluginManager().registerEvents(new ChatListener(relay), this);
@@ -84,10 +100,10 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
 
         int finalPort = actualPort;
         getLogger()
-                .info(() -> "就绪：serverId=" + SERVER_ID + "，host="
+                .info(() -> "就绪：serverId=" + config.serverId() + "，host="
                         + (host == null ? "全部接口" : host) + "，端口=" + finalPort
                         + (port == 0 ? "（动态分配）" : "") + "，绑定频道=" + config.channels()
-                        + "，鉴权=" + (config.token().isEmpty() ? "关闭（空 token）" : "开启"));
+                        + "，鉴权=开启（非空 token）");
     }
 
     @Override
@@ -112,24 +128,24 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         return whitelistGateway;
     }
 
-    /** 配置读取：存在则加载（非法即中止启用），不存在则缺省 + 日志说明。 */
-    private PureConfig loadConfig() {
+    /**
+     * 配置引导（D1/D2/D8）：目录缺失建目录 → 文件缺失生成安全默认（CREATE_NEW 防覆盖，token
+     * 随机 32 hex）→ ConfigLoader 单一权威解析 → 空 token 门禁（拒绝监听，指路文案）。任何一步
+     * 不合格抛 ConfigException，由 onEnable 统一 SEVERE 后中止启用。
+     */
+    private PureConfig loadOrCreateConfig(Path configFile) {
         if (!getDataFolder().exists() && !getDataFolder().mkdirs()) {
-            throw new IllegalStateException("无法创建插件数据目录：" + getDataFolder());
+            throw new ConfigException("无法创建插件数据目录：" + getDataFolder());
         }
-        Path configFile = getDataFolder().toPath().resolve("config.json");
-        if (!Files.exists(configFile)) {
-            getLogger().info(() -> "未找到 " + configFile + "，使用缺省配置：无绑定频道、不鉴权、" + "动态端口全部接口（游戏事件不出帧，直至写入 channels 绑定）");
-            return PureConfig.defaults();
+        if (ConfigBootstrap.ensureConfigFile(configFile)) {
+            getLogger()
+                    .info(() -> "已生成默认配置：" + configFile + "（token 为随机 32 位十六进制，对端须从该文件"
+                            + "抄取并配置同一 token；ws 默认环回 " + ConfigBootstrap.DEFAULT_WS_HOST + ":"
+                            + ConfigBootstrap.DEFAULT_WS_PORT + "）");
         }
-        try {
-            PureConfig config = ConfigLoader.load(configFile);
-            getLogger().info(() -> "已加载配置：" + configFile);
-            return config;
-        } catch (ConfigException invalid) {
-            // 错误配置不静默降级（避免无 token 全接口监听）：SEVERE 后中止启用，修正后重启
-            getLogger().log(Level.SEVERE, "配置不合法，插件停用：" + invalid.getMessage(), invalid);
-            throw invalid;
-        }
+        PureConfig config = ConfigLoader.load(configFile);
+        getLogger().info(() -> "已加载配置：" + configFile);
+        ConfigBootstrap.requireToken(config, configFile); // 空串 → ConfigException 指路（D2 安全默认）
+        return config;
     }
 }

@@ -3,6 +3,7 @@ package com.kurobridge.pure.core.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -77,22 +78,23 @@ class PureWsServerTest {
     }
 
     private PureWsServer startServer() throws InterruptedException {
-        server = new PureWsServer(
-                "127.0.0.1",
-                0,
-                new SessionContext(
-                        "srv-1",
-                        "0.1.0",
-                        "",
-                        () -> List.of("114514"),
-                        ServerTimeouts.defaults(),
-                        new Fakes.ManualScheduler(),
-                        DirectBusinessScheduler.INSTANCE,
-                        new Fakes.RecordingHooks(),
-                        new Fakes.CollectingLogger()));
+        server = new PureWsServer("127.0.0.1", 0, testContext());
         int port = server.startAndWait();
         assertTrue(port > 0, "动态端口 listen(0) 应返回实际端口");
         return server;
+    }
+
+    private SessionContext testContext() {
+        return new SessionContext(
+                "srv-1",
+                "0.1.0",
+                "",
+                () -> List.of("114514"),
+                ServerTimeouts.defaults(),
+                new Fakes.ManualScheduler(),
+                DirectBusinessScheduler.INSTANCE,
+                new Fakes.RecordingHooks(),
+                new Fakes.CollectingLogger());
     }
 
     @AfterEach
@@ -103,6 +105,21 @@ class PureWsServerTest {
         if (server != null) {
             server.shutdown();
         }
+    }
+
+    // ---- startAndWait 绑定失败（端口占用 → 即时暴露，不空等 10s 超时）----
+
+    @Test
+    void 端口被占_startAndWait即时抛绑定失败() throws Exception {
+        startServer();
+        PureWsServer second = new PureWsServer("127.0.0.1", server.getPort(), testContext());
+
+        long begin = System.nanoTime();
+        IllegalStateException failure = assertThrows(IllegalStateException.class, second::startAndWait);
+        long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - begin);
+
+        assertTrue(failure.getMessage().contains("绑定失败"), "报错须点明端口绑定失败：" + failure.getMessage());
+        assertTrue(elapsedMillis < 5000, "绑定失败应即时暴露，实测 " + elapsedMillis + "ms（不应空等超时）");
     }
 
     @Test

@@ -37,6 +37,7 @@ public final class PureWsServer extends WebSocketServer {
     private final Map<WebSocket, PeerSession> sessions = new ConcurrentHashMap<>();
     private final CountDownLatch started = new CountDownLatch(1);
     private volatile int boundPort = -1;
+    private volatile Exception bindFailure;
 
     public PureWsServer(String host, int port, SessionContext context) {
         super(
@@ -100,6 +101,11 @@ public final class PureWsServer extends WebSocketServer {
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
+        if (conn == null) {
+            // 无连接上下文的错误 = 绑定期失败（Java-WebSocket run() 的 bind 异常走 handleFatal(null)
+            // → onStart 永不回调）。startAndWait 轮询此标记即时失败，不让调用方空等超时。
+            bindFailure = ex;
+        }
         context.logger().error("WS 连接错误", ex);
     }
 
@@ -110,11 +116,23 @@ public final class PureWsServer extends WebSocketServer {
         context.logger().info(String.format("WS 服务端已监听端口 %d", boundPort));
     }
 
-    /** 开始监听并等待绑定完成，返回实际端口（port=0 时为 OS 分配的动态端口）。 */
+    /**
+     * 开始监听并等待绑定完成，返回实际端口（port=0 时为 OS 分配的动态端口）。
+     * 端口被占用/地址不可用 → IllegalStateException 即时抛出（携带底层 BindException，
+     * 不空等超时）；仍保留 10s 超时兜底 selector 线程无响应的极端情况。
+     */
     public int startAndWait() throws InterruptedException {
         start();
-        if (!started.await(10, TimeUnit.SECONDS)) {
-            throw new IllegalStateException("WS 服务端启动超时（10s 内未完成绑定）");
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (!started.await(200, TimeUnit.MILLISECONDS)) {
+            Exception failure = bindFailure;
+            if (failure != null) {
+                throw new IllegalStateException(
+                        String.format("WS 端口绑定失败（%s）：%s", getAddress(), failure.getMessage()), failure);
+            }
+            if (System.nanoTime() > deadline) {
+                throw new IllegalStateException("WS 服务端启动超时（10s 内未完成绑定）");
+            }
         }
         return boundPort;
     }
