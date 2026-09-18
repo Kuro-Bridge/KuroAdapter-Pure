@@ -23,8 +23,9 @@
 
 ## 下一阶段清单
 
-1. **Bukkit 事件接线**（`:paper`）：聊天/进退服/死亡事件 → 帧 fan-out（经 BindingStore）；
-   status 事件驱动推送（玩家进出服时）；
+1. ~~**Bukkit 事件接线**（`:paper`）：聊天/进退服/死亡事件 → 帧 fan-out（经 BindingStore）；
+   status 事件驱动推送（玩家进出服时）~~ —— 完成（2026-09-18，见
+   `docs/history/PAPER-WIRING-2026-09-18.md`；:core 补 `PureWsServer.broadcast`）；
 2. **BusinessScheduler 的 Paper 实现**：投递 Bukkit 主线程（`BukkitScheduler.runTask`），
    替换直执行缺省；
 3. **业务实现**：BindingStore 真实现（配置热重载 + bindings_updated 推送）、

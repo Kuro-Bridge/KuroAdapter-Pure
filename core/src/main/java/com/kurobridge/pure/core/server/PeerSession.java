@@ -22,7 +22,8 @@ import java.util.concurrent.CompletableFuture;
 /**
  * 单个对端连接的状态机：AWAITING_HELLO → ESTABLISHED（→ CLOSED）。
  *
- * WS 线程拥有全部连接状态（不加锁）；协议应答（hello_ack/pong/query_result/未知帧回执）
+ * WS 线程拥有除 {@link #state} 外的全部连接状态；{@code state} 为 volatile 供跨线程只读
+ * （established/send 出口），协议应答（hello_ack/pong/query_result/未知帧回执）在 WS 线程
  * 内联完成，业务回调（chat/command）经 BusinessScheduler 派发。超时（hello 10s / 空闲 30s，
  * 0 = 禁用）经 TimeoutScheduler 注入。收帧永不断连：骨架失败/具体校验失败均 warn 丢弃。
  */
@@ -47,7 +48,9 @@ public final class PeerSession {
     private final SessionContext context;
     private final IdleTracker idleTracker;
     private TimeoutScheduler.Cancellable helloTimer;
-    private State state = State.AWAITING_HELLO;
+    // volatile：游戏侧 fan-out（Bukkit 主线程/异步聊天线程）经 send()/established() 跨线程读；
+    // 其余状态仍 WS 线程独占（见 docs/history/PAPER-WIRING-2026-09-18.md §1.1 逐字段分析）
+    private volatile State state = State.AWAITING_HELLO;
     private String peerId;
 
     public PeerSession(WsConnection connection, SessionContext context) {

@@ -1,5 +1,15 @@
+# KuroBridgePure 插件清单（paper-plugin.yml，Paper 1.19.4+ 格式）
 name: KuroBridgePure
 version: 0.1.0
 main: com.kurobridge.pure.KuroBridgePurePlugin
 api-version: "1.21"
+
+# 加载时机：服务端启动时（拉起 WS 服务端并注册监听器）
 load: STARTUP
+
+# 权限节点（ChatListener 消费）：default true = 全员可转发；
+# negate（设为 false）即静音——该玩家的聊天不再上报对端
+permissions:
+    kurobridge.relay:
+        description: 消息互通权限（聊天转发）
+        default: true

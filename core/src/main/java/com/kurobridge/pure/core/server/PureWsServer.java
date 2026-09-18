@@ -1,6 +1,8 @@
 // Java-WebSocket 封装：子协议协商拒绝 + 文本帧入口 + close 封装 + 动态端口 listen(0)
 package com.kurobridge.pure.core.server;
 
+import com.kurobridge.pure.core.protocol.Frame;
+import com.kurobridge.pure.core.protocol.FrameCodec;
 import com.kurobridge.pure.core.protocol.ProtocolVersions;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -135,6 +137,30 @@ public final class PureWsServer extends WebSocketServer {
             }
         }
         return count;
+    }
+
+    /**
+     * 帧广播：发给全部已握手对端，返回送达数（对齐主仓 server.ts sendToEstablished 契约）。
+     *
+     * 可从任意线程调用（游戏侧事件 fan-out）；established/isOpen 两查与发送之间的关闭竞态按
+     * 未送达计（catch 不外抛——事件推送是尽力而为语义）。
+     */
+    public int broadcast(Frame frame) {
+        String text = FrameCodec.encode(frame);
+        int delivered = 0;
+        for (PeerSession session : sessions.values()) {
+            try {
+                if (session.send(text)) {
+                    delivered += 1;
+                }
+            } catch (RuntimeException connectionDead) {
+                // Java-WebSocket 对已断连接的 send 抛 WebsocketNotConnectedException：按未送达计
+            }
+        }
+        if (delivered == 0) {
+            context.logger().debug("无已握手对端，丢弃出帧");
+        }
+        return delivered;
     }
 
     /** WebSocket → WsConnection 适配（send 抛错视为连接已死，由 onClose 收尾）。 */
