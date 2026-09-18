@@ -25,11 +25,12 @@
 ## 门禁结果
 
 - `mise exec java@25 -- ./gradlew build`：**全绿**（compile `-Xlint:all -Werror` + spotlessCheck + 全部测试）
-- 测试：`:core` 共 7 个测试类 / **85 个用例**，0 失败 0 跳过（2026-09-18，自 78 增 7）：
+- 测试：`:core` 共 7 个测试类 / **86 个用例**，0 失败 0 跳过（2026-09-18，自 78 增 8）：
   - PeerSessionTest 34 / FrameCodecTest 13 / ConfigLoaderTest 9 / PureWsServerTest 5（回环真机自测，
     含 broadcast 两条） / ConfigBindingStoreTest 5（新增）
-  - VersionCompatTest 3 / **FixtureConformanceTest 16**（KuroProtocol v0.4 金样本逐份动态消费，
-    含 7 份行为断言：握手三份 + 心跳/指令/查询往返 + 未知请求回执）
+  - VersionCompatTest 3 / **FixtureConformanceTest 17**（KuroProtocol v0.4 金样本 16 份逐份动态
+    消费 + 1 条 SHA256SUMS 内容级 pin——逐文件哈希/清单与目录集合一致/版本↔目录推导；
+    行为断言 7 份：握手三份 + 心跳/指令/查询往返 + 未知请求回执）
 
 ## 下一阶段清单
 
@@ -45,7 +46,7 @@
 - 协议常量为人工同步副本——协议 bump 须同步 KuroProtocol 并重新 pin fixtures；
 - **本轮新发现/新引入的残留**：
   - `paper/build.gradle.kts` 补了 `log4j-core` compileOnly（运行期 Paper 自带，主仓同款）——
-    AGENTS.md 红线 2 的依赖白名单措辞未涵盖该项，需文档块补一笔；
+    AGENTS.md 红线 2 白名单已于 2026-09-18 补记该项（docs 块落地）；
   - `hello_ack.serverId` 是常量 `kurobridge-pure`（主仓同为常量），配置化随第 5 条；
   - `BukkitBusinessScheduler.dispatch` 对 disable 窗口的任务为 warn + 丢弃（回执由对端 10s
     超时兜底，见设计书 §3.1）；`PeerSession.helloTimer` 的跨线程竞态为 :core 既有良性边界

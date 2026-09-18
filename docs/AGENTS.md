@@ -12,7 +12,9 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 
 1. **零胶水**：禁止引入 Node/子进程/IPC/嵌入式相关的一切（代码、依赖、配置段）。
 2. **运行时依赖白名单**：Paper API（compileOnly）、Jackson（jackson-databind）、
-   Java-WebSocket（MIT）。测试 JUnit 5、格式化 Spotless。白名单之外零引入。
+   Java-WebSocket（MIT）、log4j-core（compileOnly——vanilla 命令输出捕获，运行期由 Paper
+   服务端自带，依据 `docs/history/PAPER-WIRING-2026-09-18.md` §4）。测试 JUnit 5、
+   格式化 Spotless。白名单之外零引入。
 3. **主仓与姊妹仓只读**：`C:\Dev\MC-Ecosystem\KuroAdapter`（行为基准 `bridge/core/src/server.ts`）
    与 `C:\Dev\MC-Ecosystem\KuroProtocol`（协议 SSOT + fixtures）只读；fixtures 拷贝进
    本仓测试资源消费并保持 PIN.md 记录。
@@ -36,7 +38,7 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 ```bash
 mise exec java@25 -- ./gradlew build          # 门禁：编译 + spotlessCheck + 全部测试
 mise exec java@25 -- ./gradlew spotlessApply  # 格式化修复
-mise exec java@25 -- ./gradlew :paper:shadowJar  # 产物 fat JAR（build/libs/kuroadapter-pure-0.1.0.jar）
+mise exec java@25 -- ./gradlew clean :paper:shadowJar  # 唯一产物 fat JAR（paper/build/libs/kuroadapter-pure-0.1.0.jar；`build` 可能 up-to-date 跳过重打）
 mise exec java@25 -- ./gradlew :core:test     # 仅 :core 测试
 ```
 
