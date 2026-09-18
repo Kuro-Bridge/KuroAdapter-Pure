@@ -41,7 +41,8 @@
 ## 门禁结果
 
 - `mise exec java@25 -- ./gradlew build`：**全绿**（compile `-Xlint:all -Werror` + spotlessCheck + 全部测试）
-- 测试：`:core` 共 10 个测试类 / **99 个用例**，0 失败 0 跳过（2026-09-18，自 86 增 13）：
+- 测试：`:core` 共 9 个测试类 / **99 个用例**，0 失败 0 跳过（2026-09-18，自 86 增 13；
+  独立复核以 `--no-build-cache` 强制实跑复核全绿，防 FROM-CACHE 掩盖）：
   - PeerSessionTest 34 / FrameCodecTest 13 / ConfigLoaderTest 11（+2：server.id 矩阵）/
     PureWsServerTest 6（+1：端口占用即时抛绑定失败）/ ConfigBindingStoreTest 5
   - VersionCompatTest 3 / **FixtureConformanceTest 17**（KuroProtocol v0.4 金样本 16 份逐份动态
