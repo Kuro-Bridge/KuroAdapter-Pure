@@ -34,14 +34,21 @@
 
 ## 下一阶段清单
 
-4. **真机联调**：Paper 服务器 + napukettoqq external 对端（或 koishi-plugin-kurobridge）
-   打通握手/聊天/指令全链路（另线负责）；
+4. **真机联调**（另线负责）：
+   - [x] 真机冒烟（2026-09-18，`docs/history/SMOKE-2026-09-18.md`）：Paper 1.21.4 sandbox +
+     koishi-dev external 对端——插件加载/WS 监听/子协议+token 握手/游戏→平台
+     （join+chat+leave+status）/平台→游戏（chat→主线程广播）双侧日志实锤，二轮启动与
+     优雅停用正常；平台→游戏的 koishi mock 注入路径被 koishi.db 既有数据阻断
+     （UNIQUE 冲突，M7 已知），以协议合规 raw WS 客户端补证 Pure 侧全链；
+   - [ ] 指令全链路（command/query 往返、death、negate 静音、vanilla 回退）与
+     koishi external 端到端发送（先清 koishi-dev 沙盒 mock binding 行）；
 5. **配置落盘**：首次启动生成默认 config.json + `/kurobridge reload` 命令（含热重载触发
    bindings_updated 推送、admins/绑定表刷新、serverId 配置化）。
 
 ## 已知边界与残留
 
-- 不接真机（`:paper` 已接线但未在 Paper 服务器上跑过——本轮所有验证是回环单测 + 编译门禁）；
+- 真机覆盖范围：冒烟（2026-09-18）已过握手 + 双向 chat 与启停路径；command/query/death/
+  negate/vanilla 回退未上真机（SMOKE 记录 §6）；
 - 不做多版本平台模块（fabric/velocity 预留位，见 settings.gradle.kts 注释）；
 - 协议常量为人工同步副本——协议 bump 须同步 KuroProtocol 并重新 pin fixtures；
 - **本轮新发现/新引入的残留**：

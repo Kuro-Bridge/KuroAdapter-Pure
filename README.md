@@ -20,7 +20,8 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 
 ## 当前能力（分阶段现状，详见 docs/STATUS.md）
 
-已接线（回环单测 + 编译门禁验证，未上真机）：
+已接线（回环单测 + 编译门禁验证；2026-09-18 另过一轮真机冒烟，见
+`docs/history/SMOKE-2026-09-18.md`）：
 
 - 配置读取（`plugins/KuroBridgePure/config.json`）+ WS 服务端启动（子协议协商/握手/鉴权/心跳）；
 - chat / join / quit / death / status 事件按绑定频道 fan-out；平台侧消息回投为游戏内
@@ -31,7 +32,8 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 未做（`docs/STATUS.md` 下一阶段清单）：
 
 - 配置落盘（首启**不**生成 config.json）与 `/kurobridge reload` 热重载；
-- 真机联调（Paper 服务器 + 真实对端全链路验证）。
+- 真机联调收尾：冒烟已覆盖握手 + 双向 chat 与启停（Paper sandbox + koishi external），
+  command/query 往返、death、negate 静音、vanilla 回退与 koishi 侧端到端发送仍未上真机。
 
 **首启须手写 `plugins/KuroBridgePure/config.json`**，最小示例：
 
