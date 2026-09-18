@@ -37,13 +37,22 @@ public final class PaperRelay implements BusinessHooks {
 
     private final BindingStore bindings;
     private final ForwardRules rules;
+    private final AdminTable admins;
+    private final PaperCommandDispatcher commandDispatcher;
     private final KbLogger logger;
     private volatile PureWsServer server;
     private volatile StatusBody latestStatus;
 
-    public PaperRelay(BindingStore bindings, ForwardRules rules, KbLogger logger) {
+    public PaperRelay(
+            BindingStore bindings,
+            ForwardRules rules,
+            AdminTable admins,
+            PaperCommandDispatcher commandDispatcher,
+            KbLogger logger) {
         this.bindings = bindings;
         this.rules = rules;
+        this.admins = admins;
+        this.commandDispatcher = commandDispatcher;
         this.logger = logger;
     }
 
@@ -107,9 +116,21 @@ public final class PaperRelay implements BusinessHooks {
         Bukkit.broadcast(Component.text("<" + body.sender() + "> " + body.content()));
     }
 
+    /**
+     * command 请求（管理员判定 + 执行全在本方法，对齐主仓 relay.handleCommandRequest 语义）：
+     * 非管理员 → forbidden（warn 日志，不执行）；管理员 → 透传执行（无命令白名单——管理员即可
+     * 执行任意命令，ADR-027）。回调已在 Bukkit 主线程（BukkitBusinessScheduler 派发），同步执行
+     * 完命令组结果、以已完成 future 返回——whenComplete 的回帧也发生在主线程（线程安全出帧）。
+     */
     @Override
     public CompletableFuture<CommandResultBody> onCommand(CommandBody body) {
-        return null; // 阶段 3：管理员判定 + 主线程执行；null = 未注册（协议层回执既定文案）
+        if (!admins.isAdmin(body.source().channel(), body.source().userId())) {
+            logger.warn(String.format(
+                    "非管理员来源执行命令被拒绝：channel=%s userId=%s command=%s",
+                    body.source().channel(), body.source().userId(), body.command()));
+            return CompletableFuture.completedFuture(CommandResultBody.failure("forbidden"));
+        }
+        return CompletableFuture.completedFuture(commandDispatcher.execute(body.command()));
     }
 
     @Override

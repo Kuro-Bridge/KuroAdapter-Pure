@@ -13,6 +13,9 @@ dependencies {
     // extends WebSocketServer（公开类型的父类须可见）——显式声明同版本；运行期经 :core
     // 传递进 runtimeClasspath（shadowJar 照常打入 fat JAR，不重复）
     compileOnly("org.java-websocket:Java-WebSocket:1.6.0")
+    // vanilla 命令输出捕获（PaperCommandDispatcher 的 vanilla 回退路径）：仅编译期需要，
+    // 运行期由 Paper 服务端自带 log4j-core 提供（主仓同款声明；设计书 §4 白名单措辞待补）
+    compileOnly("org.apache.logging.log4j:log4j-core:2.25.1")
 }
 
 // 苛刻度：Spotless(Palantir)（对齐主仓 ADR-011）

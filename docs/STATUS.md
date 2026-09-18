@@ -29,9 +29,13 @@
 2. ~~**BusinessScheduler 的 Paper 实现**：投递 Bukkit 主线程（`BukkitScheduler.runTask`），
    替换直执行缺省~~ —— 完成（2026-09-18，BukkitBusinessScheduler 接入 SessionContext；
    onPlatformChat 同笔落地：绑定过滤 + `<sender> content` 全服广播）；
-3. **业务实现**：BindingStore 真实现（配置热重载 + bindings_updated 推送）、
+3. ~~**业务实现**：BindingStore 真实现（配置热重载 + bindings_updated 推送）、
    ForwardRules 转发规则、WhitelistGateway 接 `Bukkit.dispatchCommand`（CONSOLE 名义）、
-   command 管理员判定（admins 配置）；
+   command 管理员判定（admins 配置）~~ —— 完成（2026-09-18，见
+   `docs/history/PAPER-WIRING-2026-09-18.md`：ConfigBindingStore + AdminTable +
+   PaperCommandDispatcher（CONSOLE 收集 + vanilla 回退）+ PaperWhitelistGateway；
+   ForwardRules 维持双向默认放行；管理员判定在 dispatch 之前，无命令白名单——对齐 ADR-027。
+   热重载触发的 bindings_updated 推送随第 5 条）；
 4. **真机联调**：Paper 服务器 + napukettoqq external 对端（或 koishi-plugin-kurobridge）
    打通握手/聊天/指令全链路；
 5. **配置落盘**：首次启动生成默认 config.json + `/kurobridge reload` 命令。

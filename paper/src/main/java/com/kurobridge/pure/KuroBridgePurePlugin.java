@@ -10,11 +10,14 @@ import com.kurobridge.pure.core.server.ExecutorTimeoutScheduler;
 import com.kurobridge.pure.core.server.PureWsServer;
 import com.kurobridge.pure.core.server.ServerTimeouts;
 import com.kurobridge.pure.core.server.SessionContext;
+import com.kurobridge.pure.paper.AdminTable;
 import com.kurobridge.pure.paper.BukkitBusinessScheduler;
 import com.kurobridge.pure.paper.ChatListener;
 import com.kurobridge.pure.paper.ConnectionListener;
 import com.kurobridge.pure.paper.DeathListener;
+import com.kurobridge.pure.paper.PaperCommandDispatcher;
 import com.kurobridge.pure.paper.PaperRelay;
+import com.kurobridge.pure.paper.PaperWhitelistGateway;
 import com.kurobridge.pure.paper.PluginKbLogger;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +40,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
 
     private PureWsServer server;
     private ExecutorTimeoutScheduler timeoutScheduler;
+    private PaperWhitelistGateway whitelistGateway;
 
     @Override
     public void onEnable() {
@@ -44,7 +48,10 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
 
         ConfigBindingStore bindings = new ConfigBindingStore(config.channels());
         PluginKbLogger logger = new PluginKbLogger(getLogger());
-        PaperRelay relay = new PaperRelay(bindings, ForwardRules.EMPTY, logger);
+        PaperCommandDispatcher commandDispatcher = new PaperCommandDispatcher(this);
+        PaperRelay relay = new PaperRelay(
+                bindings, ForwardRules.EMPTY, new AdminTable(config.admins()), commandDispatcher, logger);
+        whitelistGateway = new PaperWhitelistGateway(commandDispatcher); // 结构化未来用（ADR-027 同机制）
         timeoutScheduler = new ExecutorTimeoutScheduler();
         SessionContext context = new SessionContext(
                 SERVER_ID,
@@ -97,6 +104,12 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
             timeoutScheduler.close();
             timeoutScheduler = null;
         }
+        whitelistGateway = null;
+    }
+
+    /** 白名单网关（结构化调用位；须在 Bukkit 主线程使用——见 PaperWhitelistGateway 契约）。 */
+    public PaperWhitelistGateway whitelistGateway() {
+        return whitelistGateway;
     }
 
     /** 配置读取：存在则加载（非法即中止启用），不存在则缺省 + 日志说明。 */
