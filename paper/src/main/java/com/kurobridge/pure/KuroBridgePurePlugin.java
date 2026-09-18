@@ -6,11 +6,11 @@ import com.kurobridge.pure.core.business.ConfigException;
 import com.kurobridge.pure.core.business.ConfigLoader;
 import com.kurobridge.pure.core.business.ForwardRules;
 import com.kurobridge.pure.core.business.PureConfig;
-import com.kurobridge.pure.core.server.DirectBusinessScheduler;
 import com.kurobridge.pure.core.server.ExecutorTimeoutScheduler;
 import com.kurobridge.pure.core.server.PureWsServer;
 import com.kurobridge.pure.core.server.ServerTimeouts;
 import com.kurobridge.pure.core.server.SessionContext;
+import com.kurobridge.pure.paper.BukkitBusinessScheduler;
 import com.kurobridge.pure.paper.ChatListener;
 import com.kurobridge.pure.paper.ConnectionListener;
 import com.kurobridge.pure.paper.DeathListener;
@@ -43,8 +43,8 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         PureConfig config = loadConfig();
 
         ConfigBindingStore bindings = new ConfigBindingStore(config.channels());
-        PaperRelay relay = new PaperRelay(bindings, ForwardRules.EMPTY);
         PluginKbLogger logger = new PluginKbLogger(getLogger());
+        PaperRelay relay = new PaperRelay(bindings, ForwardRules.EMPTY, logger);
         timeoutScheduler = new ExecutorTimeoutScheduler();
         SessionContext context = new SessionContext(
                 SERVER_ID,
@@ -53,7 +53,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
                 bindings::boundChannels,
                 ServerTimeouts.defaults(),
                 timeoutScheduler,
-                DirectBusinessScheduler.INSTANCE, // 阶段 2 换 Bukkit 主线程投递（BukkitBusinessScheduler）
+                new BukkitBusinessScheduler(this), // 业务回调投递 Bukkit 主线程（Bukkit API 非线程安全）
                 relay,
                 logger);
 

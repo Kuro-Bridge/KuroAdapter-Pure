@@ -15,10 +15,13 @@ import com.kurobridge.pure.core.protocol.message.LeaveBody;
 import com.kurobridge.pure.core.protocol.message.PlatformChatBody;
 import com.kurobridge.pure.core.protocol.message.StatusBody;
 import com.kurobridge.pure.core.server.BusinessHooks;
+import com.kurobridge.pure.core.server.KbLogger;
 import com.kurobridge.pure.core.server.PureWsServer;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 
 /**
  * 纯 Java 线的 Relay（对齐主仓 bridge/core/src/relay.ts 的装配语义）：
@@ -27,19 +30,21 @@ import java.util.function.Function;
  *   （主仓 fanoutGameEvent + sendToEstablished 的合体；无绑定/无对端不出帧）；
  * - status：更新快照与推送同一入口 {@link #pushStatus}（镜像主仓 server.sendStatus，
  *   query kind=status 读同一快照，不做成两份状态）；
- * - 平台→游戏 / command：实现 {@link BusinessHooks}（协议层经 BusinessScheduler 派发进来），
- *   阶段 2/3 逐步填充。
+ * - 平台→游戏 / command：实现 {@link BusinessHooks}（协议层经 BusinessScheduler 派发进来，
+ *   回调已在 Bukkit 主线程——onPlatformChat 全服广播，onCommand 阶段 3 填充）。
  */
 public final class PaperRelay implements BusinessHooks {
 
     private final BindingStore bindings;
     private final ForwardRules rules;
+    private final KbLogger logger;
     private volatile PureWsServer server;
     private volatile StatusBody latestStatus;
 
-    public PaperRelay(BindingStore bindings, ForwardRules rules) {
+    public PaperRelay(BindingStore bindings, ForwardRules rules, KbLogger logger) {
         this.bindings = bindings;
         this.rules = rules;
+        this.logger = logger;
     }
 
     /** PureWsServer 注入位（startAndWait 之后、监听器注册之前调用——无并发窗口）。 */
@@ -86,11 +91,20 @@ public final class PaperRelay implements BusinessHooks {
         }
     }
 
-    // ---- BusinessHooks：WS 入站 → 游戏（经 BusinessScheduler 派发，阶段 2/3 填充）----
+    // ---- BusinessHooks：WS 入站 → 游戏（经 BusinessScheduler 派发，回调已在 Bukkit 主线程）----
 
+    /**
+     * 平台→游戏聊天：绑定频道过滤（未绑定 → debug 丢弃，镜像主仓 platformChatTarget 语义）
+     * → 全服广播。渲染格式 = `<sender> content` 一行（镜像主仓 relay.forwardToGame 的组包
+     * + NodeRequestHandler.onBroadcast 的 runTask→Bukkit.broadcast；本线回调已在主线程）。
+     */
     @Override
     public void onPlatformChat(PlatformChatBody body) {
-        // 阶段 2：绑定过滤 + 主线程广播进游戏
+        if (!bindings.isBound(body.channel()) || !rules.shouldForwardToGame(body.channel())) {
+            logger.debug(String.format("平台消息来自未绑定频道 %s，丢弃", body.channel()));
+            return;
+        }
+        Bukkit.broadcast(Component.text("<" + body.sender() + "> " + body.content()));
     }
 
     @Override

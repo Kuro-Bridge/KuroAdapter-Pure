@@ -26,8 +26,9 @@
 1. ~~**Bukkit 事件接线**（`:paper`）：聊天/进退服/死亡事件 → 帧 fan-out（经 BindingStore）；
    status 事件驱动推送（玩家进出服时）~~ —— 完成（2026-09-18，见
    `docs/history/PAPER-WIRING-2026-09-18.md`；:core 补 `PureWsServer.broadcast`）；
-2. **BusinessScheduler 的 Paper 实现**：投递 Bukkit 主线程（`BukkitScheduler.runTask`），
-   替换直执行缺省；
+2. ~~**BusinessScheduler 的 Paper 实现**：投递 Bukkit 主线程（`BukkitScheduler.runTask`），
+   替换直执行缺省~~ —— 完成（2026-09-18，BukkitBusinessScheduler 接入 SessionContext；
+   onPlatformChat 同笔落地：绑定过滤 + `<sender> content` 全服广播）；
 3. **业务实现**：BindingStore 真实现（配置热重载 + bindings_updated 推送）、
    ForwardRules 转发规则、WhitelistGateway 接 `Bukkit.dispatchCommand`（CONSOLE 名义）、
    command 管理员判定（admins 配置）；
