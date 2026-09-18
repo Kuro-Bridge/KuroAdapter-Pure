@@ -26,6 +26,9 @@ spotless {
     }
 }
 
+// 产物唯一化：fat JAR 是唯一可装产物——禁用 Gradle 默认 jar（薄壳），保证 build 后 libs 只剩 fat JAR
+tasks.jar { enabled = false }
+
 tasks.shadowJar {
     archiveFileName.set("kuroadapter-pure-${project.version}.jar")
     archiveClassifier.set("")

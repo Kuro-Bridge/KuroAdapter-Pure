@@ -41,3 +41,6 @@ subprojects {
         useJUnitPlatform()
     }
 }
+
+// 产物唯一化：根项目无源码，默认 jar 只会产出同名空壳（与 :paper fat JAR 同名异实体）——禁用
+tasks.jar { enabled = false }
