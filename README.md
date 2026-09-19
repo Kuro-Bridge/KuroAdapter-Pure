@@ -103,4 +103,4 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 | `:core` | 协议层（帧编解码/握手/版本协商/鉴权/心跳/未知帧容忍）+ WS 服务端 + 业务骨架，零 Bukkit API |
 | `:paper` | Paper 适配层（插件生命周期 + 事件/命令/调度/白名单桥接，2026-09-18 完成接线） |
 
-[KuroProtocol]: https://github.com/Oppenheymu/KuroProtocol
+[KuroProtocol]: https://github.com/Kuro-Bridge/KuroProtocol
