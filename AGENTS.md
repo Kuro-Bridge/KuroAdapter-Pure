@@ -44,7 +44,7 @@ mise exec java@25 -- ./gradlew :core:test     # 仅 :core 测试
 
 - 全局 `java` 是 21（不能用），构建统一 `mise exec java@25 -- ...`。
 - gradle 输出乱码时：`JAVA_TOOL_OPTIONS="-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"`。
-- 只本地提交（master），不建远端、不 push。
+- 远端在册（origin=Kuro-Bridge/KuroAdapter-Pure，已切 canonical）；提交默认本地落 master，推送由用户决策；CI（`.github/workflows/ci.yml`）于 push/PR 触发 build 门禁。
 
 ## 结构速查
 
