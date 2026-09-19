@@ -93,7 +93,7 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 }
 ```
 
-- 设计书：`docs/design.md`；现状与路线图：`docs/STATUS.md`；工程规范：`docs/AGENTS.md`。
+- 设计书：`docs/design.md`；现状与路线图：`docs/STATUS.md`；工程规范：`AGENTS.md`（仓根）。
 - 对端接入实现依据：KuroProtocol 仓 `docs/peer-guide.md`。
 
 ## 模块
