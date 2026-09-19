@@ -1,2 +1,20 @@
 [tools]
 java = "25"
+
+# 构建入口 = mise tasks（mise run <任务>，跨平台经 bash 执行 gradlew 脚本，mise exec 保证
+# JDK 25——全局 java 是 21 不可用）。CI 仍走原生 ./gradlew build，两边同一条 gradle 任务图。
+[tasks.build]
+description = "门禁：编译 + spotlessCheck + 全部测试（= CI ./gradlew build）"
+run = "mise exec java@25 -- bash ./gradlew build"
+
+[tasks.format]
+description = "格式化修复（spotlessApply，提交前跑）"
+run = "mise exec java@25 -- bash ./gradlew spotlessApply"
+
+[tasks.jar]
+description = "唯一产物 fat JAR：clean + :paper:shadowJar（build 可能 up-to-date 跳过重打，故先 clean）"
+run = "mise exec java@25 -- bash ./gradlew clean :paper:shadowJar"
+
+[tasks.fixtures]
+description = "金样本机械刷新（需网络；显式任务不挂 build 图，后续手工步骤见任务输出）"
+run = "mise exec java@25 -- bash ./gradlew :core:refreshFixtures"

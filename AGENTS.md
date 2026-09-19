@@ -36,13 +36,16 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 ## 常用命令
 
 ```bash
-mise exec java@25 -- ./gradlew build          # 门禁：编译 + spotlessCheck + 全部测试
-mise exec java@25 -- ./gradlew spotlessApply  # 格式化修复
-mise exec java@25 -- ./gradlew clean :paper:shadowJar  # 唯一产物 fat JAR（paper/build/libs/kuroadapter-pure-0.1.0.jar；`build` 可能 up-to-date 跳过重打）
-mise exec java@25 -- ./gradlew :core:test     # 仅 :core 测试
+mise run build      # 门禁：编译 + spotlessCheck + 全部测试（= CI ./gradlew build）
+mise run format     # 格式化修复（spotlessApply；提交前跑）
+mise run jar        # 唯一产物 fat JAR（clean :paper:shadowJar → paper/build/libs/kuroadapter-pure-0.1.0.jar）
+mise run fixtures   # 金样本机械刷新（需网络；显式任务不挂 build 图，后续手工步骤见任务输出）
 ```
 
-- 全局 `java` 是 21（不能用），构建统一 `mise exec java@25 -- ...`。
+- 构建入口 = mise tasks（定义于 `mise.toml [tasks]`，跨平台经 bash 执行 gradlew，mise exec
+  保证 JDK 25——全局 `java` 是 21 不能用）。偶用 gradle 原生命令仍可
+  `mise exec java@25 -- ./gradlew <task>`（如 `:core:test` 仅跑 :core 测试）；CI 走原生
+  `./gradlew build`，两边同一条任务图。
 - gradle 输出乱码时：`JAVA_TOOL_OPTIONS="-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"`。
 - 远端在册（origin=Kuro-Bridge/KuroAdapter-Pure，已切 canonical）；提交默认本地落 master，推送由用户决策；CI（`.github/workflows/ci.yml`）于 push/PR 触发 build 门禁。
 

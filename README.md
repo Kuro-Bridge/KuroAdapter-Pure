@@ -9,14 +9,16 @@ WS 服务端——外部协议端（napukettoqq / koishi-plugin-kurobridge / 其
 ## 快速开始
 
 ```bash
-mise exec java@25 -- ./gradlew build                  # 门禁（编译 + spotlessCheck + 测试）
-mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
+mise run build   # 门禁（编译 + spotlessCheck + 测试，= CI ./gradlew build）
+mise run jar     # 可靠重打 fat JAR（clean :paper:shadowJar）
 ```
 
+- 构建入口 = mise tasks（定义于 `mise.toml [tasks]`；`mise run build | format | jar | fixtures`），
+  底层为同一张 gradle 任务图——偶用 gradle 原生命令仍可 `mise exec java@25 -- ./gradlew <task>`。
 - 唯一可装产物：`paper/build/libs/kuroadapter-pure-0.1.0.jar`（shadowJar fat JAR，内含
   :core；薄壳与根空壳 jar 已在构建脚本中禁用），丢进 Paper 服务器 `plugins/` 即可。
 - 坑：`build` 目标下的 shadowJar 可能因 up-to-date 被跳过（jar mtime 不刷新）——需要
-  确定性重打时用上面的 `clean :paper:shadowJar`。
+  确定性重打时用上面的 `mise run jar`（先 clean）。
 
 ## 当前能力（分阶段现状，详见 docs/STATUS.md）
 
