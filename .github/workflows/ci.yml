@@ -1,0 +1,20 @@
+# CI 门禁(基线 §3:与本地门禁链同构;零网络特性——build 不触发 refreshFixtures,
+# fixtures 全部 git 跟踪在库,仅需 Maven Central + papermc 可达)
+# 本地等价:mise exec java@25 -- ./gradlew build --console=plain(同一任务图)
+name: ci
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7 # marketplace 实查(2026-09-20):最新 major v7(v7.0.1)
+      - uses: actions/setup-java@v6 # 最新 major v6(v6.0.1)
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: gradle/actions/setup-gradle@v6 # 最新 major v6(v6.3.0):wrapper jar 校验 + 依赖缓存
+      - run: ./gradlew build --console=plain
