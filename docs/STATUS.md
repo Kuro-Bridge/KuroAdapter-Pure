@@ -41,8 +41,9 @@
 ## 门禁结果
 
 - `mise exec java@25 -- ./gradlew build`：**全绿**（compile `-Xlint:all -Werror` + spotlessCheck + 全部测试）
-- 测试：`:core` 共 9 个测试类 / **99 个用例**，0 失败 0 跳过（2026-09-18，自 86 增 13；
-  独立复核以 `--no-build-cache` 强制实跑复核全绿，防 FROM-CACHE 掩盖）：
+- 测试：`:core` 共 10 个测试类 / **103 个用例**，0 失败 0 跳过（2026-09-19，自 99 增 4：
+  StatusCountsTest——quit 窗口剔除/不在列表不重复剔除/仅退出者回零/空列表回零；
+  `--no-build-cache` 实跑全绿，防 FROM-CACHE 掩盖）：
   - PeerSessionTest 34 / FrameCodecTest 13 / ConfigLoaderTest 11（+2：server.id 矩阵）/
     PureWsServerTest 6（+1：端口占用即时抛绑定失败）/ ConfigBindingStoreTest 5
   - VersionCompatTest 3 / **FixtureConformanceTest 17**（KuroProtocol v0.4 金样本 16 份逐份动态
@@ -52,6 +53,7 @@
     字节不动/父目录创建/目录创建失败指路/token 门禁矩阵）
   - **ConfigReloadReportTest 4**（新增：无变化/channels+admins 热更组/token+server.id 冷组/
     ws 缺省→显式逐字段报）
+  - **StatusCountsTest 4**（新增 2026-09-19：G1a 修复配套，见 GAPS-2026-09-19 §2.1）
 
 ## 下一阶段清单
 
@@ -69,18 +71,24 @@
      尾格随块 A 合并态 jar 实证首启自生成 + 空 token 拒绝监听 + reload 热冷分组回执。
 5. **配置落盘**：[x] 已完成（2026-09-18，见上方「配置落盘与安全默认」勾组；README 配置段
    为用户面文档，热冷矩阵与首启行为以 `docs/history/CONFIG-2026-09-18.md` 裁决为准）。
+6. **待真机清单**（顺延下一波冒烟，本轮不抢沙盒；GAPS-2026-09-19 §5）：G1a 复验——
+   两假人先后 quit，逐帧核对 status 帧 onlinePlayers 递减到位（SMOKE-2 §6-3 同场景；
+   单测只保口径规则，Bukkit 事件接线须真机背书）。G1b/G2/G3 行为未变无需复验。
 
 ## 已知边界与残留
 
 - 真机覆盖范围：冒烟（SMOKE-2026-09-18）+ 矩阵补格（SMOKE-2026-09-18-2，a–j 十格全过）——
   握手/双向 chat/command（含 vanilla 回退与 forbidden）/query/death/negate/bindings_updated/
   reload/首启自生成/空 token 拒绝均已真机实锤；残留为语义级边界（下两条）；
-- status 快照语义：leave 时推送的快照仍计入离开玩家（计数偏大），`query status` 返回该
-  缓存、事件稀疏场景可滞后（协议文本允许；SMOKE-2 §6-3）；全新起服无事件时正确回
+- status 快照语义：quit 计数偏大**已修**（2026-09-19，quit 路径按 UUID 剔除退出者，
+  StatusCounts 口径 + 单测，GAPS-2026-09-19 §2.1；真机复验顺延见待真机清单）；
+  `query status` 返回最近一帧缓存、事件稀疏场景可滞后——**对齐主仓的接受语义**（周期刷新
+  已被主仓 ADR-034 否决；协议文本允许；GAPS §2.2）；全新起服无事件时正确回
   `no status yet`；
-- `version` 命令仅捕获同步首行输出（异步余量直落控制台，收集窗口设计边界，主仓同构）；
-  非玩家聊天源（控制台 `say`）不转发——ChatListener 仅接 AsyncChatEvent，协议未承诺
-  （SMOKE-2 §6-4/5）；
+- `version` 命令仅捕获同步首行输出（异步余量直落控制台，收集窗口设计边界，主仓同构，
+  **裁决不修**，GAPS §2.3）；非玩家聊天源（控制台 `say`）不转发为**显式非目标**——
+  ChatListener 仅接 AsyncChatEvent，对齐主仓隐含语义升格为显式裁决（GAPS §2.4，
+  SMOKE-2 §6-4/5；主仓 /kurobridge send 显式通道先例登记为未来增强）；
 - 不做多版本平台模块（fabric/velocity 预留位，见 settings.gradle.kts 注释）；
 - 协议常量为人工同步副本——协议 bump 须同步 KuroProtocol 并发 npm 版后跑
   `gradlew refreshFixtures` 从包内机械重取金样本（2026-09-18 起，手拷淘汰；见

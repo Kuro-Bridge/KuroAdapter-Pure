@@ -34,11 +34,13 @@ mise exec java@25 -- ./gradlew clean :paper:shadowJar # 可靠重打 fat JAR
 
 未做（`docs/STATUS.md` 已知边界与残留）：
 
-- status 快照语义边界：leave 时推送的快照仍计入离开玩家（计数偏大），`query status`
-  返回该缓存、事件稀疏场景可滞后；
-- `version` 命令仅捕获同步首行输出，异步余量直落控制台；控制台 `say` 等非玩家聊天源
-  不转发（协议未承诺）；
-- 多版本平台模块（fabric/velocity 预留位）；koishi 对端仍在 0.1.0 线（对端升级属对端线）。
+- status 快照语义边界：quit 计数偏大**已修**（2026-09-19，GAPS-2026-09-19 §2.1，真机
+  复验顺延）；`query status` 返回最近一帧缓存、事件稀疏场景可滞后（对齐主仓的接受语义，
+  GAPS-2026-09-19 §2.2）；
+- `version` 命令仅捕获同步首行输出，异步余量直落控制台（收集窗口设计边界，裁决不修，
+  GAPS-2026-09-19 §2.3）；控制台 `say` 等非玩家聊天源不转发为**显式非目标**
+  （GAPS-2026-09-19 §2.4）；
+- 多版本平台模块（fabric/velocity 预留位）；koishi 对端已升级 0.2.0（2026-09-19，对端线交付）。
 
 ## 配置（plugins/KuroBridgePure/config.json）
 
