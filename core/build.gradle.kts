@@ -11,7 +11,7 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 dependencies {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.22.2")
     implementation("org.java-websocket:Java-WebSocket:1.6.0")
 
     testImplementation(platform("org.junit:junit-bom:5.11.0"))
