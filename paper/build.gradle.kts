@@ -18,14 +18,6 @@ dependencies {
     compileOnly("org.apache.logging.log4j:log4j-core:2.25.1")
 }
 
-// 苛刻度：Spotless(Palantir)（对齐主仓 ADR-011）
-spotless {
-    java {
-        palantirJavaFormat("2.71.0") // JDK 25 兼容：>=2.71.0 才能用新版 javac 内部 API（spotless#2625）
-        target("src/**/*.java")
-    }
-}
-
 // 产物唯一化：fat JAR 是唯一可装产物——禁用 Gradle 默认 jar（薄壳），保证 build 后 libs 只剩 fat JAR
 tasks.jar { enabled = false }
 

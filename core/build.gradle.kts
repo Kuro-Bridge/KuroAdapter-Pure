@@ -19,13 +19,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-// 苛刻度：Spotless(Palantir)（对齐主仓 ADR-011）
-spotless {
-    java {
-        palantirJavaFormat("2.71.0") // JDK 25 兼容：>=2.71.0 才能用新版 javac 内部 API（spotless#2625）
-        target("src/**/*.java")
-    }
-}
+// 苛刻度：Spotless(Palantir) 统一收敛于根 build.gradle.kts 的 subprojects 块
 
 // ---------------------------------------------------------------------------
 // 金样本机械刷新（docs/history/FIXTURES-CONSUMER-2026-09-18.md 裁决：候选 b）

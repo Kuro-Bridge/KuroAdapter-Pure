@@ -6,10 +6,12 @@ plugins {
     id("com.gradleup.shadow") version "9.0.0" apply false
 }
 
-group = "com.kurobridge"
-version = "0.1.0"
-
 allprojects {
+    // 坐标单一持有：root 与 subprojects 同源（Gradle 的 group/version 不自动继承，
+    // 此前根上一份 + subprojects 里一份各写各的，收敛于此一处）
+    group = "com.kurobridge"
+    version = "0.1.0"
+
     repositories {
         // Paper API（compileOnly）等
         maven("https://repo.papermc.io/repository/maven-public/")
@@ -17,13 +19,10 @@ allprojects {
     }
 }
 
-// 所有模块统一的 Java 工具链与编译苛刻度（对齐主仓 ADR-011/ADR-015）
+// 所有模块统一的 Java 工具链、编译苛刻度与 Spotless（对齐主仓 ADR-011/ADR-015）
 subprojects {
     apply(plugin = "java")
     apply(plugin = "com.diffplug.spotless")
-
-    group = "com.kurobridge"
-    version = "0.1.0"
 
     java {
         toolchain {
@@ -39,6 +38,14 @@ subprojects {
 
     tasks.withType<Test>().configureEach {
         useJUnitPlatform()
+    }
+
+    // 苛刻度：Spotless(Palantir)——此前 :core/:paper 各持一份同款配置，收敛于此
+    configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        java {
+            palantirJavaFormat("2.71.0") // JDK 25 兼容：>=2.71.0 才能用新版 javac 内部 API（spotless#2625）
+            target("src/**/*.java")
+        }
     }
 }
 
