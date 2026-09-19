@@ -214,7 +214,7 @@ com.kurobridge.pure.core
 | 依赖 | 范围 | 理由 |
 |---|---|---|
 | `io.papermc.paper:paper-api` | :paper compileOnly | Paper 插件 API，运行期由服务端提供 |
-| `com.fasterxml.jackson.core:jackson-databind:2.18.0` | :core | JSON 编解码（帧解析 + 配置加载）；主仓 Java 侧同款同版本 |
+| `com.fasterxml.jackson.core:jackson-databind` | :core | JSON 编解码（帧解析 + 配置加载）。立项 2.18.0（当时与主仓 Java 侧同款同版本），现行 **2.22.2**（2026-09-19 minor 升级）——版本唯一锚 = `gradle/libs.versions.toml` |
 | `org.java-websocket:Java-WebSocket:1.6.0` | :core | WS 服务端实现；**MIT 许可**（与本项目 MIT 兼容）、零传递运行时（slf4j-api 由 Paper 运行期自带，shadowJar 排除） |
 | `org.junit:junit-bom:5.11.0` + junit-jupiter + launcher | test | JUnit 5（主仓同款） |
 | `com.diffplug.spotless` 7.0.2 / `com.gradleup.shadow` 9.0.0 | 构建插件 | 格式化 / fat JAR（主仓同款） |

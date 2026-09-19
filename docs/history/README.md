@@ -17,9 +17,9 @@
 
 | 册 | 日期 | 类型 | 一句话定位 | 被引/勾账 |
 |---|---|---|---|---|
-| [PAPER-WIRING-2026-09-18.md](PAPER-WIRING-2026-09-18.md) | 2026-09-18 | 规格 | :paper 接线设计书（广播缝隙/线程模型/白名单语义对齐主仓 ADR-027） | STATUS、AGENTS §4、GAPS |
-| [CONFIG-2026-09-18.md](CONFIG-2026-09-18.md) | 2026-09-18 | 决策 | 配置落盘与安全默认 D1–D8；热冷矩阵与首启行为以本册为准 | STATUS ×2、SMOKE-2 |
-| [FIXTURES-CONSUMER-2026-09-18.md](FIXTURES-CONSUMER-2026-09-18.md) | 2026-09-18 | 决策 | 金样本包内消费机制与 refreshFixtures runbook | STATUS、GAPS |
+| [PAPER-WIRING-2026-09-18.md](PAPER-WIRING-2026-09-18.md) | 2026-09-18 | 规格 | :paper 接线设计书（广播缝隙/线程模型/白名单语义对齐主仓 ADR-027） | STATUS、AGENTS 红线 2、GAPS、design §8 |
+| [CONFIG-2026-09-18.md](CONFIG-2026-09-18.md) | 2026-09-18 | 决策 | 配置落盘与安全默认 D1–D8；热冷矩阵与首启行为以本册为准 | STATUS ×2、SMOKE-2、GAPS |
+| [FIXTURES-CONSUMER-2026-09-18.md](FIXTURES-CONSUMER-2026-09-18.md) | 2026-09-18 | 决策 | 金样本包内消费机制与 refreshFixtures runbook | STATUS、GAPS、PIN.md |
 | [SMOKE-2026-09-18.md](SMOKE-2026-09-18.md) | 2026-09-18 | 实录 | 真机冒烟首轮（Paper sandbox + koishi external 对端） | README、STATUS ×2、GAPS |
 | [SMOKE-2026-09-18-2.md](SMOKE-2026-09-18-2.md) | 2026-09-18/19 | 实录 | 矩阵补格 a–j 十格；§6 为 GAPS 清册输入（已受勾账补注 ×5 + 独立复核修正 ×1，见各条〔〕注） | GAPS、README、STATUS ×2 |
 | [GAPS-2026-09-19.md](GAPS-2026-09-19.md) | 2026-09-19 | 决策 | 缺口三态裁决单一权威（G1a–G20 清册；STATUS/SMOKE-2/README 勾账以本册为准） | README ×4、STATUS ×6 |
