@@ -1,0 +1,11 @@
+# 依赖版本单一权威(基线 §2.2/§5:引入 catalog 仅去重,版本值一律不变)
+# 消 Java-WebSocket 在 :core implementation 与 :paper compileOnly 的双处手写 pin
+[versions]
+jacksonDatabind = "2.22.2"
+javaWebsocket = "1.6.0"
+junitBom = "5.11.0"
+
+[libraries]
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
+java-websocket = { module = "org.java-websocket:Java-WebSocket", version.ref = "javaWebsocket" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
