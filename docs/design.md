@@ -4,9 +4,12 @@
 > 零 Node、零子进程、零 IPC、零嵌入式胶水——与主仓（KuroAdapter，Paper JAR + Node 子进程）
 > 相同的协议行为，纯 Java 单体实现。
 >
-> 协议契约的实现依据 = **KuroProtocol 仓**（`C:\Dev\MC-Ecosystem\KuroProtocol`）的
+> 协议契约的实现依据 = **KuroProtocol 仓**（工作区姊妹目录 `../KuroProtocol`）的
 > `docs/peer-guide.md` + `src/frame.ts` / `src/messages/ws.ts` / `src/meta.ts`（SSOT），
 > 一致性门禁 = 该仓 `fixtures/v0.4/` 金样本（整目录拷贝进本仓测试资源消费，见 §7）。
+>
+> 时态注：本文为 2026-09-16 基线；`:paper` 接线与配置落盘已于 2026-09-18 完成，
+> 正文按基线时态行文不改写，实况以 `docs/STATUS.md` 为准。
 
 ## 0. 定位与硬性红线
 
@@ -22,7 +25,7 @@
 
 ```
 :core   com.kurobridge.pure.core      协议层 + 业务骨架；零 Bukkit API，可独立 JUnit 测试
-:paper  com.kurobridge.pure(.paper)   Paper 薄适配：插件生命周期 + （下一阶段）Bukkit 事件接线
+:paper  com.kurobridge.pure(.paper)   Paper 薄适配：插件生命周期 + Bukkit 事件接线（2026-09-18 完成）
 ```
 
 - `:core` 依赖：Jackson（JSON）、Java-WebSocket（WS 服务端）。**不含任何 Paper API**。
@@ -162,7 +165,8 @@ com.kurobridge.pure.core
   行为立即回写，不经业务调度。
 - **业务回调经 BusinessScheduler 派发**：chat → onPlatformChat、command → onCommand 都
   包一层 `BusinessScheduler.dispatch`；缺省 `DirectBusinessScheduler` 直执行（测试友好），
-  **下一阶段 Paper 侧实现投递 Bukkit 主线程**（Bukkit API 非线程安全）。
+  Paper 侧 `BukkitBusinessScheduler` 主线程投递已于 2026-09-18 随接线实现
+  （Bukkit API 非线程安全）。
 - **定时器经 TimeoutScheduler 注入**：生产实现 `ExecutorTimeoutScheduler`（daemon
   ScheduledExecutorService，不阻止 JVM 退出）；测试用手动推进的假调度器（确定性断言
   超时行为，等效主仓 ManualScheduler + ManualClock 的时钟注入法）。
@@ -175,14 +179,21 @@ com.kurobridge.pure.core
   **去掉 runtime 与 embedded 段**（纯 Java 线无子进程/无嵌入，两段无意义）：
   `channels: string[]`（必填可空，去重保序）、`token: string`（缺省 ""）、
   `admins: [{channel, users: string[]}]`（缺省 []，channel 与 users 各自去重保序）、
-  `ws: {host?, port 1-65535}`（整段缺省 = 动态端口全接口；只配 host 合法）。
+  `ws: {host?, port 1-65535}`（整段缺省 = 动态端口全接口；只配 host 合法）、
+  `server: {id: string}`（可选根字段，缺省 `"kurobridge-pure"`，须非空字符串——
+  hello_ack 上报 serverId；进程固定，reload 冷更。2026-09-18 随配置落盘补齐，
+  字段形状对齐主仓 ADR-034 `server` 段，裁决见 `docs/history/CONFIG-2026-09-18.md`）。
   行为：多余字段剥离、缺字段补缺省、非法值抛类型化 `ConfigException`
   （测试矩阵对齐主仓 `bridge/core/src/business/__tests__/config.test.ts`，剔除两段后）。
 - **BindingStore**：频道绑定集合——`boundChannels()` fan-out 迭代、`isBound(channel)`
   入站过滤、`addListener` 变更通知位（bindings_updated 推送用）。空实现返回空集。
-- **ForwardRules**：转发判定（平台→游戏 / 游戏→平台）。空实现一律放行（`// 下一阶段`）。
+- **ForwardRules**：转发判定（平台→游戏 / 游戏→平台）。空实现一律放行——接线后仍为现行
+  语义：`:paper` 注入 `ForwardRules.EMPTY` 作二次策略位，恒放行对齐主仓 `forwarding.ts`
+  现行行为，规则配置留作后续增强。
 - **WhitelistGateway**：白名单网关接口——语义上走 MC 原生 `whitelist` 命令（SSOT 是
-  `whitelist.json`，本仓不自建白名单存储）。空实现无操作（`// 下一阶段`）。
+  `whitelist.json`，本仓不自建白名单存储）。Paper 实现 `PaperWhitelistGateway` 已于
+  2026-09-18 随接线落地（经命令执行机制 CONSOLE 派发 + 输出收集；command 帧当前走
+  透传同效，结构化调用位留未来）。
 
 ## 5. 与主仓 platforms/je 的差异
 
@@ -232,4 +243,5 @@ com.kurobridge.pure.core
    PureWsServer），随实现补单测；
 3. 业务骨架（ConfigLoader + 三个接口空实现）+ 配置矩阵测试；
 4. 金样本夹具接线（拷贝 + PIN + 门禁测试）；
-5. `:paper` 插件壳（paper-plugin.yml + 主类空壳，`// 下一阶段` 标注）。
+5. `:paper` 插件壳（paper-plugin.yml + 主类）——已交付：2026-09-18 完成事件/命令/调度
+   接线（见 `docs/history/PAPER-WIRING-2026-09-18.md` 与 `docs/STATUS.md`）。

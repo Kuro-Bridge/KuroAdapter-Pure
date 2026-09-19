@@ -4,7 +4,7 @@ KuroBridge 纯净线第一站：**纯 Java Paper 插件**，实现 `kurobridge-w
 WS 服务端——外部协议端（napukettoqq / koishi-plugin-kurobridge / 其它实现）以 WS 客户端
 身份主动连入，与 MC 服务器互通报文。与主仓 KuroAdapter（Paper JAR + Node 子进程）协议
 行为一致，但零 Node、零子进程、零 IPC、零嵌入式胶水；协议契约 SSOT 在姊妹仓
-[KuroProtocol]（`C:\Dev\MC-Ecosystem\KuroProtocol`），金样本夹具做两仓一致性门禁。
+[KuroProtocol]（工作区姊妹仓 `../KuroProtocol`），金样本夹具做两仓一致性门禁。
 
 ## 快速开始
 

@@ -15,9 +15,9 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
    Java-WebSocket（MIT）、log4j-core（compileOnly——vanilla 命令输出捕获，运行期由 Paper
    服务端自带，依据 `docs/history/PAPER-WIRING-2026-09-18.md` §4）。测试 JUnit 5、
    格式化 Spotless。白名单之外零引入。
-3. **主仓与姊妹仓只读**：`C:\Dev\MC-Ecosystem\KuroAdapter`（行为基准 `bridge/core/src/server.ts`）
-   与 `C:\Dev\MC-Ecosystem\KuroProtocol`（协议 SSOT + fixtures）只读；fixtures 拷贝进
-   本仓测试资源消费并保持 PIN.md 记录。
+3. **主仓与姊妹仓只读**：工作区内与本仓并列的 `../KuroAdapter`（行为基准
+   `bridge/core/src/server.ts`）与 `../KuroProtocol`（协议 SSOT + fixtures）只读；
+   fixtures 拷贝进本仓测试资源消费并保持 PIN.md 记录。
 4. **协议契约 = KuroProtocol 仓** `docs/peer-guide.md` + `src/frame.ts` /
    `src/messages/ws.ts` / `src/meta.ts`；一致性门禁 = `fixtures/v0.4/` 金样本
    （`core/src/test/resources/fixtures/`，PIN.md 记录来源与日期）。协议 bump 时：
@@ -50,6 +50,6 @@ mise exec java@25 -- ./gradlew :core:test     # 仅 :core 测试
 
 ```
 :core  com.kurobridge.pure.core     协议层（protocol/）+ 服务端（server/）+ 业务骨架（business/）
-:paper com.kurobridge.pure          插件主类 + paper-plugin.yml（适配层，事件接线下一阶段）
+:paper com.kurobridge.pure          插件主类 + paper-plugin.yml（适配层，2026-09-18 完成事件/命令/调度接线）
 core/src/test/resources/fixtures/   KuroProtocol 金样本 pin（v0.4，16 份）+ PIN.md
 ```
