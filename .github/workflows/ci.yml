@@ -17,4 +17,4 @@ jobs:
           distribution: temurin
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v6 # 最新 major v6(v6.3.0):wrapper jar 校验 + 依赖缓存
-      - run: ./gradlew build --console=plain
+      - run: sh ./gradlew build --console=plain
