@@ -71,17 +71,18 @@
      尾格随块 A 合并态 jar 实证首启自生成 + 空 token 拒绝监听 + reload 热冷分组回执。
 5. **配置落盘**：[x] 已完成（2026-09-18，见上方「配置落盘与安全默认」勾组；README 配置段
    为用户面文档，热冷矩阵与首启行为以 `docs/history/CONFIG-2026-09-18.md` 裁决为准）。
-6. **待真机清单**（顺延下一波冒烟，本轮不抢沙盒；GAPS-2026-09-19 §5）：G1a 复验——
-   两假人先后 quit，逐帧核对 status 帧 onlinePlayers 递减到位（SMOKE-2 §6-3 同场景；
-   单测只保口径规则，Bukkit 事件接线须真机背书）。G1b/G2/G3 行为未变无需复验。
+6. **待真机清单**：[x] G1a 复验完成（2026-09-19，`docs/history/SMOKE-2026-09-19-G1A.md`）——
+   两假人同场后先后 quit，leave 帧同秒推送 status：2→1→0 逐帧递减到位、quit 后首帧无 +1
+   多计；另附两组独退 1→0。G1b/G2/G3 行为未变无需复验（GAPS-2026-09-19 §5 闭环）。
 
 ## 已知边界与残留
 
 - 真机覆盖范围：冒烟（SMOKE-2026-09-18）+ 矩阵补格（SMOKE-2026-09-18-2，a–j 十格全过）——
   握手/双向 chat/command（含 vanilla 回退与 forbidden）/query/death/negate/bindings_updated/
   reload/首启自生成/空 token 拒绝均已真机实锤；残留为语义级边界（下两条）；
-- status 快照语义：quit 计数偏大**已修**（2026-09-19，quit 路径按 UUID 剔除退出者，
-  StatusCounts 口径 + 单测，GAPS-2026-09-19 §2.1；真机复验顺延见待真机清单）；
+- status 快照语义：quit 计数偏大**已修并真机复验通过**（2026-09-19，quit 路径按 UUID 剔除
+  退出者，StatusCounts 口径 + 单测，GAPS-2026-09-19 §2.1；真机逐帧见
+  `docs/history/SMOKE-2026-09-19-G1A.md`）；
   `query status` 返回最近一帧缓存、事件稀疏场景可滞后——**对齐主仓的接受语义**（周期刷新
   已被主仓 ADR-034 否决；协议文本允许；GAPS §2.2）；全新起服无事件时正确回
   `no status yet`；
