@@ -1,23 +1,28 @@
 <div align="center">
 
-<h1 id="kurobridge-pure">
-  <img src=".github/assets/wordmark.svg" alt="KuroBridge Pure" width="560">
-</h1>
+<img src=".github/assets/wordmark.svg" alt="KuroBridge Pure" width="560">
 
-**纯净线：纯 Java 实现的 `kurobridge-ws` WS 服务端 —— 零 Node、零子进程、零 IPC，丢进 `plugins/` 即用**
+**Minecraft 服务器与社交平台群服互通 · 纯净线服务端**
+
+<small>纯 Java Paper 插件实现 kurobridge-ws 服务端 · 零 Node · 零子进程 · 零 IPC</small>
 
 <p>
-  <sub>坐标</sub> <code>com.kurobridge:kuroadapter-pure 0.1.0</code>
-  &emsp;<sub>角色</sub> <code>WS 服务端</code>
-  &emsp;<sub>Java</sub> <code>工具链 25 · 字节码 21</code>
-  &emsp;<sub>许可</sub> <code>MIT</code>
+  <img src="https://img.shields.io/badge/坐标-kuroadapter--pure%200.1.0-57606A?style=flat" alt="坐标：kuroadapter-pure 0.1.0">
+  &emsp;
+  <img src="https://img.shields.io/badge/角色-WS%20服务端-57606A?style=flat" alt="角色：WS 服务端">
+  &emsp;
+  <img src="https://img.shields.io/badge/Java-工具链%2025%20·%20release%2021-3E7C7C?style=flat" alt="Java：工具链 25 · release 21">
+  &emsp;
+  <img src="https://img.shields.io/badge/协议-kurobridge--ws%200.4.0-4C71A3?style=flat" alt="协议：kurobridge-ws 0.4.0">
+  &emsp;
+  <img src="https://img.shields.io/badge/许可-MIT-6E7781?style=flat" alt="许可：MIT">
 </p>
 
 <p>
-  <a href="#双线选型">双线选型</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#配置">配置</a> •
-  <a href="#模块与一致性">模块与一致性</a> •
+  <a href="#双线选型">双线选型</a> ·
+  <a href="#快速开始">快速开始</a> ·
+  <a href="#配置">配置</a> ·
+  <a href="#模块与一致性">模块与一致性</a> ·
   <a href="#english">English</a>
 </p>
 

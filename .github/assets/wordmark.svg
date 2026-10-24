@@ -1,25 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="150" viewBox="0 0 560 150" role="img" aria-label="KuroBridge Pure">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="112" viewBox="0 0 560 112" role="img" aria-label="KuroBridge Pure">
   <title>KuroBridge Pure</title>
   <style>
     text {
       font-family: 'Segoe UI Variable Display', 'Segoe UI', 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
     }
     .brand {
-      fill: #18181B;
+      fill: #1f2328;
       font-size: 56px;
-      letter-spacing: -1px;
+      letter-spacing: 0;
     }
     .module {
-      fill: #71717A;
-      font-size: 21px;
+      fill: #59636e;
+      font-size: 20px;
       font-weight: 600;
-      letter-spacing: 6.5px;
+      letter-spacing: 3px;
     }
     @media (prefers-color-scheme: dark) {
-      .brand { fill: #ECECF0; }
-      .module { fill: #A1A1AA; }
+      .brand { fill: #f0f6fc; }
+      .module { fill: #8b949e; }
     }
   </style>
-  <text class="brand" x="280" y="66" text-anchor="middle"><tspan font-weight="300">Kuro</tspan><tspan font-weight="800">Bridge</tspan></text>
-  <text class="module" x="283" y="118" text-anchor="middle">Pure</text>
+  <text class="brand" x="280" y="48" text-anchor="middle"><tspan font-weight="400">Kuro</tspan><tspan font-weight="600">Bridge</tspan></text>
+  <text class="module" x="281.5" y="98" text-anchor="middle">PURE</text>
 </svg>
