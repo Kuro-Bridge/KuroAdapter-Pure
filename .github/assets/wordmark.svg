@@ -20,6 +20,6 @@
       .module { fill: #8b949e; }
     }
   </style>
-  <text class="brand" x="280" y="48" text-anchor="middle"><tspan font-weight="400">Kuro</tspan><tspan font-weight="600">Bridge</tspan></text>
-  <text class="module" x="281.5" y="98" text-anchor="middle">PURE</text>
+  <text class="brand" x="280" y="52" text-anchor="middle"><tspan font-weight="400">Kuro</tspan><tspan font-weight="600">Bridge</tspan></text>
+  <text class="module" x="281.5" y="94" text-anchor="middle">PURE</text>
 </svg>
