@@ -1,6 +1,6 @@
 # KuroAdapter-Pure 工程指南（AGENTS）
 
-> 开始任何工作前，先读本文件与 `docs/STATUS.md`（现状）→ `docs/design.md`（设计书）。
+> 开始任何工作前，先读本文件与 `docs/README.md`（文档索引；边界清单见 `docs/architecture/limits.md`）。
 
 ## 项目是什么
 
@@ -13,7 +13,7 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 1. **零胶水**：禁止引入 Node/子进程/IPC/嵌入式相关的一切（代码、依赖、配置段）。
 2. **运行时依赖白名单**：Paper API（compileOnly）、Jackson（jackson-databind）、
    Java-WebSocket（MIT）、log4j-core（compileOnly——vanilla 命令输出捕获，运行期由 Paper
-   服务端自带，依据 `docs/history/PAPER-WIRING-2026-09-18.md` §4）。测试 JUnit 5、
+   服务端自带，依据 `docs/development/build.md`）。测试 JUnit 5、
    格式化 Spotless。白名单之外零引入。
 3. **主仓与姊妹仓只读**：工作区内与本仓并列的 `../KuroAdapter`（行为基准
    `bridge/core/src/server.ts`）与 `../KuroProtocol`（协议 SSOT + fixtures）只读；

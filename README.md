@@ -82,7 +82,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 - `/kurobridge reload` 配置热重载（语义见下）。
 
 <details>
-<summary><b>已知边界</b>（最新口径见 docs/STATUS.md）</summary>
+<summary><b>已知边界</b>（最新口径见 docs/architecture/limits.md）</summary>
 
 - `query status` 返回最近一帧缓存，事件稀疏场景可滞后（与主仓一致的接受语义）；
 - `version` 命令仅捕获同步首行输出，异步余量直落控制台（收集窗口设计边界，裁决不修）；
@@ -155,7 +155,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 - **金样本一致性门禁**：`:core` 测试 pin KuroProtocol v0.4 金样本 16 份（`core/src/test/resources/fixtures/`），`FixtureConformanceTest` 逐帧对表；`mise run fixtures` 从 npm 包机械刷新。测试基线：`:core` 10 个测试类 / 103 用例。
 - **工具链**：Java 25 / `release 21` · Gradle 9.7 · Spotless（palantir）· JUnit 5 · `-Xlint:all -Werror`。
-- 设计书：[docs/design.md](docs/design.md)（分层 / 线程模型 / 与主仓差异）；现状与边界：[docs/STATUS.md](docs/STATUS.md)；工程规范：[AGENTS.md](AGENTS.md)。
+- 文档体系：[docs/README.md](docs/README.md)（架构 / 协议规格 / 模块机制 / 开发维护）；工程规范：[AGENTS.md](AGENTS.md)。
 - 对端接入实现依据：[peer-guide](https://github.com/Kuro-Bridge/KuroProtocol/blob/main/docs/peer-guide.md)。
 
 ---
