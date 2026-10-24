@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="560" height="112" viewBox="0 0 560 112" role="img" aria-label="KuroBridge Pure">
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="100" viewBox="0 0 560 100" role="img" aria-label="KuroBridge Pure">
   <title>KuroBridge Pure</title>
   <style>
     text {
@@ -20,6 +20,6 @@
       .module { fill: #8b949e; }
     }
   </style>
-  <text class="brand" x="280" y="52" text-anchor="middle"><tspan font-weight="400">Kuro</tspan><tspan font-weight="600">Bridge</tspan></text>
-  <text class="module" x="281.5" y="94" text-anchor="middle">PURE</text>
+  <text class="brand" x="280" y="50" text-anchor="middle"><tspan font-weight="400">Kuro</tspan><tspan font-weight="600">Bridge</tspan></text>
+  <text class="module" x="281.5" y="85" text-anchor="middle">PURE</text>
 </svg>

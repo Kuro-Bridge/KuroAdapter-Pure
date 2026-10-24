@@ -2,7 +2,7 @@
 
 <br />
 
-<img src=".github/assets/wordmark.svg" alt="KuroBridge Pure" width="800">
+<img src=".github/assets/wordmark.svg?v=2" alt="KuroBridge Pure" width="800">
 
 **Minecraft 服务器与社交平台群服互通 · 纯净线服务端**
 
