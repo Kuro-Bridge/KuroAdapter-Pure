@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="150" viewBox="0 0 560 150" role="img" aria-label="KuroBridge Pure">
+  <title>KuroBridge Pure</title>
+  <style>
+    text {
+      font-family: 'Segoe UI Variable Display', 'Segoe UI', 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    }
+    .brand {
+      fill: #18181B;
+      font-size: 56px;
+      letter-spacing: -1px;
+    }
+    .module {
+      fill: #71717A;
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: 6.5px;
+    }
+    @media (prefers-color-scheme: dark) {
+      .brand { fill: #ECECF0; }
+      .module { fill: #A1A1AA; }
+    }
+  </style>
+  <text class="brand" x="280" y="66" text-anchor="middle"><tspan font-weight="300">Kuro</tspan><tspan font-weight="800">Bridge</tspan></text>
+  <text class="module" x="283" y="118" text-anchor="middle">Pure</text>
+</svg>
