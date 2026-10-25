@@ -2,6 +2,8 @@
 package com.kurobridge.pure.paper;
 
 import com.kurobridge.pure.core.business.PureConfig;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +22,9 @@ public final class AdminTable {
     public AdminTable(List<PureConfig.AdminMapping> admins) {
         Map<String, Set<String>> byChannel = new LinkedHashMap<>();
         for (PureConfig.AdminMapping mapping : admins) {
-            byChannel.putIfAbsent(mapping.channel(), Set.copyOf(mapping.users()));
+            byChannel.putIfAbsent(mapping.channel(), Collections.unmodifiableSet(new HashSet<>(mapping.users())));
         }
-        this.usersByChannel = Map.copyOf(byChannel);
+        this.usersByChannel = Collections.unmodifiableMap(new LinkedHashMap<>(byChannel));
     }
 
     /** 是否管理员（command 帧的放行判定；false = forbidden 不 dispatch）。 */

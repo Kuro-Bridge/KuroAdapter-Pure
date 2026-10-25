@@ -2,6 +2,7 @@
 package com.kurobridge.pure.paper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
@@ -49,7 +50,7 @@ final class VanillaFeedbackCapture {
 
     /** 已捕获的输出行（快照）。 */
     public List<String> collectedLines() {
-        return List.copyOf(lines);
+        return Collections.unmodifiableList(new ArrayList<>(lines));
     }
 
     private static final class CapturingAppender extends AbstractAppender {

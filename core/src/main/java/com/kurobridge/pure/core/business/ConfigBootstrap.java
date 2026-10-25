@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
-import java.util.HexFormat;
 
 /**
  * 配置引导（纯逻辑，无 Bukkit API；生成件即文档）：
@@ -97,18 +96,22 @@ public final class ConfigBootstrap {
 
     /** CREATE_NEW 落盘（防覆盖）；原子性交给 CREATE_NEW 语义本身。 */
     private static void writeNewOnly(Path file) throws IOException {
-        Files.writeString(
+        // 不用 Files.writeString（Java 11）：Java 8 基线（ADR-038 对齐主仓 universal）走字节写入
+        Files.write(
                 file,
-                defaultConfigJson(),
-                StandardCharsets.UTF_8,
+                defaultConfigJson().getBytes(StandardCharsets.UTF_8),
                 StandardOpenOption.CREATE_NEW,
                 StandardOpenOption.WRITE);
     }
 
-    /** 16 字节 SecureRandom → 32 位小写 hex（D3；只落盘不回显）。 */
+    /** 16 字节 SecureRandom → 32 位小写 hex（D3；只落盘不回显）。不用 HexFormat（Java 17）。 */
     private static String randomToken() {
         byte[] bytes = new byte[TOKEN_BYTES];
         new SecureRandom().nextBytes(bytes);
-        return HexFormat.of().formatHex(bytes);
+        StringBuilder hex = new StringBuilder(TOKEN_BYTES * 2);
+        for (byte item : bytes) {
+            hex.append(String.format("%02x", item));
+        }
+        return hex.toString();
     }
 }

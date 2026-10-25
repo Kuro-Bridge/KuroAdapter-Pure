@@ -6,6 +6,7 @@ import com.kurobridge.pure.core.server.StatusCounts;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -54,7 +55,7 @@ public final class ConnectionListener implements Listener {
      */
     private static StatusBody statusSnapshotAfterQuit(UUID excluding) {
         List<UUID> onlineIds =
-                Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).toList();
+                Bukkit.getOnlinePlayers().stream().map(Player::getUniqueId).collect(Collectors.toList());
         return new StatusBody(currentTps(), StatusCounts.countExcluding(onlineIds, excluding), uptimeSeconds());
     }
 

@@ -10,6 +10,16 @@ import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
+// Java 8 字节码基线（对齐主仓 ADR-038 universal 兼容：1.12.2/1.16.5 服普遍跑 Java 8 JVM，
+// 纯协议层无 Paper API 同样下探）。
+// 只约束 main 源集——测试源集保持根配置的 release 21，测试代码可继续用现代语法。
+// --release 8 同时是兼容性机器门禁：任何 Java 9+ SE API 误用在此直接编译失败。
+// -Xlint:-options：压制 JDK 25 对 source/target 8 的「已过时」提示（预期内，非代码问题）。
+tasks.named<JavaCompile>("compileJava") {
+    options.release = 8
+    options.compilerArgs.add("-Xlint:-options")
+}
+
 dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.java.websocket)

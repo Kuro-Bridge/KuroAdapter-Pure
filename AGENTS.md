@@ -27,7 +27,7 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 
 ## 风格
 
-- Java 工具链 25、字节码 **release 21**（对齐主仓 ADR-015）、`-Xlint:all -Werror`、UTF-8。
+- Java 工具链 25、`:core`/`:paper` main 源集字节码 **release 8**（对齐主仓 ADR-038 universal：1.12.2 ~ 26.3 单 jar，`--release 8` 同时是 Java 9+ SE API 误用的机器门禁；测试源集保持 release 21）、`-Xlint:all -Werror`、UTF-8。
 - Spotless + palantirJavaFormat 2.71.0（>=2.71.0 才兼容 JDK 25）；提交前 `spotlessApply`。
 - 类型化错误（`ProtocolException` / `ConfigException`），不静默吞；日志走注入的 `KbLogger`。
 - 提交信息中文，`docs:` / `chore:` / `feat:` / `test:` / `fix:` 前缀。
@@ -53,6 +53,6 @@ mise run fixtures   # 金样本机械刷新（需网络；显式任务不挂 bui
 
 ```
 :core  com.kurobridge.pure.core     协议层（protocol/）+ 服务端（server/）+ 业务骨架（business/）
-:paper com.kurobridge.pure          插件主类 + paper-plugin.yml（适配层，2026-09-18 完成事件/命令/调度接线）
+:paper com.kurobridge.pure          插件主类 + 经典 plugin.yml（适配层；2026-10-25 起 ADR-038 universal 化：Java 8 字节码 + 经典注册/聊天双路径/序列化兼容链）
 core/src/test/resources/fixtures/   KuroProtocol 金样本 pin（v0.4，16 份）+ PIN.md
 ```

@@ -15,13 +15,14 @@ mise 经 `mise exec java@25` 保证 JDK 25(全局 `java` 可能是 21,不可用)
 
 ## 工具链与苛刻度(根 build.gradle.kts 统一收敛)
 
-- Java 工具链 **25**,字节码 `options.release = 21`(兼容 Paper 运行时);UTF-8;`-Xlint:all -Werror`。
+- Java 工具链 **25**;UTF-8;`-Xlint:all -Werror`。字节码分层(对齐主仓 ADR-038 universal):`:core`/`:paper` 的 **main 源集 `options.release = 8`**(Java 8 字节码,1.12.2 ~ 26.3 单 jar;`--release 8` 同时是 Java 9+ SE API 误用的机器门禁,源码层 record/List.of 等已全部脱糖为 Java 8 等价),测试源集保持 release 21(可用现代语法);配套 `-Xlint:-options`(:core/:paper)与 `-Xlint:-classfile`(:paper,压 release-8 类文件模型读 paper-api jar 的固有元数据噪音)。
+- `:paper` compileClasspath 显式声明消费者属性 `TargetJvmVersion = 21`(paper-api 1.21.4 元数据口径,与 release 8 编译目标不一致须对齐,否则变体选择器拒绝解析)。
 - Spotless + palantirJavaFormat **2.71.0**(JDK 25 兼容需 >= 2.71.0)。
 - 测试统一 JUnit Platform;根项目 jar 禁用(无源码,默认 jar 只会产出与 fat JAR 同名的空壳)。
 
 ## 产物
 
-唯一可装产物:`paper/build/libs/kuroadapter-pure-0.1.0.jar`(shadowJar fat JAR,内含 `:core`;`:paper` 薄壳 jar 与根 jar 均已禁用)。manifest 写 Implementation-Title/Version;**排除 `org.slf4j:slf4j-api`**(Java-WebSocket 传递依赖,Paper 运行期自带)。
+唯一可装产物:`paper/build/libs/kuroadapter-pure-0.1.0.jar`(shadowJar fat JAR,内含 `:core`;`:paper` 薄壳 jar 与根 jar 均已禁用)。**Java 8 字节码 + 经典 `plugin.yml`(api-version 1.13),兼容 Paper 1.12.2 ~ 26.3**。manifest 写 Implementation-Title/Version;**排除 `org.slf4j:slf4j-api`**(Java-WebSocket 传递依赖,Paper 运行期自带);`duplicatesStrategy = EXCLUDE`——Jackson 三件各带 META-INF/LICENSE/NOTICE,重复 zip 条目会被 Paper 1.20.5+ 的 PluginRemapper 拒绝(经典 plugin.yml 的 api-version 1.13 触发重映射,主仓 2026-10-25 Paper-1.21.11 实证 Duplicate entries detected)。
 
 已知坑:build 目标下的 shadowJar 可能因 up-to-date 被跳过(jar mtime 不刷新)——需要确定性重打用 `mise run jar`(先 clean)。gradle 输出乱码时:`JAVA_TOOL_OPTIONS="-Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8"`。
 

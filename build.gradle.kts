@@ -31,7 +31,10 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        options.release = 21 // ADR-015：字节码 target 21，兼容 Paper 运行时
+        // 缺省 release 21：测试源集保持工具链现代语法（主仓同款取舍）；:core/:paper 的 main
+        // 源集在各自 build.gradle.kts 覆盖为 release 8（ADR-038 对齐主仓 universal：1.12.2 ~
+        // 26.3 单 jar，--release 同时是 Java 9+ SE API 误用的机器门禁）
+        options.release = 21
         options.encoding = "UTF-8"
         options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror")) // 苛刻度（ADR-011）
     }

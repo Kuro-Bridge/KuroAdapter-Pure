@@ -6,6 +6,26 @@ plugins {
     id("com.gradleup.shadow")
 }
 
+// Java 8 字节码基线（对齐主仓 ADR-038 universal 兼容），同 :core：只约束 main 源集，
+// --release 8 是 Java 9+ SE API 误用的机器门禁。
+// 消费端 JVM 版本声明为 21 的原因：paper-api 1.21.4 元数据带 TARGET_JVM_VERSION 21，
+// 与本模块 release 8 的编译目标不一致，须显式对齐元数据否则选择器直接拒绝解析。
+import org.gradle.api.attributes.java.TargetJvmVersion
+
+tasks.named<JavaCompile>("compileJava") {
+    options.release = 8
+    // -Xlint:-options 压制 JDK 25 的「源/目标 8 已过时」提示；-Xlint:-classfile 压制
+    // release-8 类文件模型读 1.21.4 paper-api jar（@Deprecated(since=/forRemoval=) 为
+    // Java 9+ 元素）的固有噪音——两者均非源码问题，-Werror 之外的真实门禁保留
+    options.compilerArgs.addAll(listOf("-Xlint:-options", "-Xlint:-classfile"))
+}
+
+configurations.named("compileClasspath") {
+    attributes {
+        attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 21)
+    }
+}
+
 dependencies {
     implementation(project(":core"))
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
@@ -24,6 +44,10 @@ tasks.jar { enabled = false }
 tasks.shadowJar {
     archiveFileName.set("kuroadapter-pure-${project.version}.jar")
     archiveClassifier.set("")
+    // Jackson 三件各带 META-INF/LICENSE/NOTICE，重复 zip 条目会被 Paper 1.20.5+ 的
+    // PluginRemapper 拒绝（经典 plugin.yml 的 api-version 1.13 触发重映射；主仓 2026-10-25
+    // Paper-1.21.11 实证 Duplicate entries detected）——EXCLUDE 保首个，条目唯一
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes("Implementation-Title" to "KuroAdapter-Pure", "Implementation-Version" to project.version)
     }

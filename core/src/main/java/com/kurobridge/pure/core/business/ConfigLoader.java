@@ -5,9 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +33,8 @@ public final class ConfigLoader {
     public static PureConfig load(Path file) {
         String json;
         try {
-            json = Files.readString(file);
+            // 不用 Files.readString（Java 11）：Java 8 基线（ADR-038 对齐主仓 universal）
+            json = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
         } catch (IOException unreadable) {
             throw new ConfigException(String.format("配置文件读取失败：%s", file), unreadable);
         }
@@ -90,7 +93,7 @@ public final class ConfigLoader {
 
     private static List<PureConfig.AdminMapping> parseAdmins(JsonNode node) {
         if (node == null || node.isNull()) {
-            return List.of(); // 缺省 = 无人可经 command 执行命令
+            return Collections.emptyList(); // 缺省 = 无人可经 command 执行命令
         }
         if (!node.isArray()) {
             throw new ConfigException("admins 必须是 {channel, users} 数组");
@@ -121,7 +124,7 @@ public final class ConfigLoader {
             }
             byChannel.putIfAbsent(channelNode.asText(), new PureConfig.AdminMapping(channelNode.asText(), users));
         }
-        return List.copyOf(byChannel.values());
+        return Collections.unmodifiableList(new ArrayList<>(byChannel.values()));
     }
 
     private static PureConfig.WsListen parseWs(JsonNode node) {

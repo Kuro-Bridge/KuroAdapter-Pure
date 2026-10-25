@@ -19,21 +19,28 @@ public interface WhitelistGateway {
     /** whitelist remove <player>。 */
     CompletableFuture<Void> remove(String player);
 
+    /** 已完成即失败的 future（不用 CompletableFuture.failedFuture，Java 9+）。 */
+    static <T> CompletableFuture<T> failed(Throwable error) {
+        CompletableFuture<T> future = new CompletableFuture<>();
+        future.completeExceptionally(error);
+        return future;
+    }
+
     /** 空实现：未接线（下一阶段接 Bukkit 命令派发 + 输出收集）。 */
     WhitelistGateway EMPTY = new WhitelistGateway() {
         @Override
         public CompletableFuture<List<String>> list() {
-            return CompletableFuture.failedFuture(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
+            return WhitelistGateway.failed(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
         }
 
         @Override
         public CompletableFuture<Void> add(String player) {
-            return CompletableFuture.failedFuture(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
+            return WhitelistGateway.failed(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
         }
 
         @Override
         public CompletableFuture<Void> remove(String player) {
-            return CompletableFuture.failedFuture(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
+            return WhitelistGateway.failed(new UnsupportedOperationException("whitelist gateway 未接线（下一阶段）"));
         }
     };
 }

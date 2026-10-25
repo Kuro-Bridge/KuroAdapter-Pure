@@ -20,8 +20,6 @@ import com.kurobridge.pure.core.server.PureWsServer;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 
 /**
  * 纯 Java 线的 Relay（对齐主仓 bridge/core/src/relay.ts 的装配语义）：
@@ -118,7 +116,8 @@ public final class PaperRelay implements BusinessHooks {
             logger.debug(String.format("平台消息来自未绑定频道 %s，丢弃", body.channel()));
             return;
         }
-        Bukkit.broadcast(Component.text("<" + body.sender() + "> " + body.content()));
+        // 广播经 Broadcasts 跨版本分发（Component 调用点隔离，1.12.2 无 Adventure 走 String 路径）
+        Broadcasts.broadcast("<" + body.sender() + "> " + body.content());
     }
 
     /**

@@ -2,6 +2,7 @@
 package com.kurobridge.pure.core.business;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -14,11 +15,14 @@ import java.util.Objects;
  *   <li>restartPending：冷字段中有变化的（token / ws.host / ws.port / server.id，进程固定，重启生效）。
  * </ul>
  */
-public record ConfigReloadReport(List<String> hotApplied, List<String> restartPending) {
+public final class ConfigReloadReport {
 
-    public ConfigReloadReport {
-        hotApplied = List.copyOf(hotApplied);
-        restartPending = List.copyOf(restartPending);
+    private final List<String> hotApplied;
+    private final List<String> restartPending;
+
+    public ConfigReloadReport(List<String> hotApplied, List<String> restartPending) {
+        this.hotApplied = Collections.unmodifiableList(new ArrayList<>(hotApplied));
+        this.restartPending = Collections.unmodifiableList(new ArrayList<>(restartPending));
     }
 
     /** 机械对比新旧配置（ws 整段缺省按 host/port 均 null 计）。 */
@@ -40,6 +44,36 @@ public record ConfigReloadReport(List<String> hotApplied, List<String> restartPe
             pending.add("server.id");
         }
         return new ConfigReloadReport(hot, pending);
+    }
+
+    public List<String> hotApplied() {
+        return hotApplied;
+    }
+
+    public List<String> restartPending() {
+        return restartPending;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof ConfigReloadReport)) {
+            return false;
+        }
+        ConfigReloadReport other = (ConfigReloadReport) obj;
+        return Objects.equals(hotApplied, other.hotApplied) && Objects.equals(restartPending, other.restartPending);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hotApplied, restartPending);
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigReloadReport[hotApplied=" + hotApplied + ", restartPending=" + restartPending + "]";
     }
 
     private static List<String> wsDiff(PureConfig.WsListen previous, PureConfig.WsListen next) {

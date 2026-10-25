@@ -1,6 +1,7 @@
 // 频道绑定集合：fan-out 迭代 + 入站过滤 + 变更通知位（bindings_updated 推送用）
 package com.kurobridge.pure.core.business;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public interface BindingStore {
     BindingStore EMPTY = new BindingStore() {
         @Override
         public List<String> boundChannels() {
-            return List.of();
+            return Collections.emptyList();
         }
 
         @Override

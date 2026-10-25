@@ -6,6 +6,9 @@ import com.kurobridge.pure.core.protocol.message.CommandBody;
 import com.kurobridge.pure.core.protocol.message.CommandSource;
 import com.kurobridge.pure.core.protocol.message.HelloBody;
 import com.kurobridge.pure.core.protocol.message.PlatformChatBody;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -16,19 +19,31 @@ import java.util.Set;
 public final class InboundFrames {
 
     /** 服务端已知收帧 type 清单（两段式解析的「已知/未知」分界）。 */
-    public static final Set<String> KNOWN_TYPES = Set.of("hello", "ping", "chat", "command", "query");
+    public static final Set<String> KNOWN_TYPES = Collections.unmodifiableSet(
+            new LinkedHashSet<>(Arrays.asList("hello", "ping", "chat", "command", "query")));
 
     private InboundFrames() {}
 
     /** 按已知 type 分发解析（金样本门禁用）；未知 type 抛 FrameValidationException。 */
     public static void validate(Frame frame) {
         switch (frame.type()) {
-            case "hello" -> hello(frame);
-            case "ping" -> ping(frame);
-            case "chat" -> platformChat(frame);
-            case "command" -> command(frame);
-            case "query" -> query(frame);
-            default -> throw new FrameValidationException(String.format("未知收帧 type：%s", frame.type()));
+            case "hello":
+                hello(frame);
+                break;
+            case "ping":
+                ping(frame);
+                break;
+            case "chat":
+                platformChat(frame);
+                break;
+            case "command":
+                command(frame);
+                break;
+            case "query":
+                query(frame);
+                break;
+            default:
+                throw new FrameValidationException(String.format("未知收帧 type：%s", frame.type()));
         }
     }
 

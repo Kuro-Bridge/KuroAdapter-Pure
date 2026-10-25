@@ -15,19 +15,21 @@ import com.kurobridge.pure.core.server.SessionContext;
 import com.kurobridge.pure.paper.AdminTable;
 import com.kurobridge.pure.paper.BukkitBusinessScheduler;
 import com.kurobridge.pure.paper.ChatListener;
+import com.kurobridge.pure.paper.Compat;
 import com.kurobridge.pure.paper.ConnectionListener;
 import com.kurobridge.pure.paper.DeathListener;
 import com.kurobridge.pure.paper.KurobridgeCommand;
+import com.kurobridge.pure.paper.LegacyChatListener;
 import com.kurobridge.pure.paper.PaperCommandDispatcher;
 import com.kurobridge.pure.paper.PaperRelay;
 import com.kurobridge.pure.paper.PaperWhitelistGateway;
 import com.kurobridge.pure.paper.PluginKbLogger;
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -58,7 +60,6 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
     public void onEnable() {
         registerKurobridgeCommand();
         Path configFile = getDataFolder().toPath().resolve("config.json");
-
         PureConfig config;
         try {
             config = loadOrCreateConfig(configFile);
@@ -77,7 +78,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         timeoutScheduler = new ExecutorTimeoutScheduler();
         SessionContext context = new SessionContext(
                 config.serverId(),
-                getPluginMeta().getVersion(),
+                pluginVersion(),
                 config.token(),
                 bindings::boundChannels,
                 ServerTimeouts.defaults(),
@@ -113,7 +114,12 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         relay.attach(wsServer);
         bindings.addChangeListener(relay::bindingsUpdated);
 
-        Bukkit.getPluginManager().registerEvents(new ChatListener(relay), this);
+        if (Compat.asyncChatEventPresent()) {
+            Bukkit.getPluginManager().registerEvents(new ChatListener(relay), this);
+        } else {
+            // ADR-038 对齐主仓 universal：1.12.2 ~ 1.18.2 无 AsyncChatEvent，挂 legacy 监听
+            Bukkit.getPluginManager().registerEvents(new LegacyChatListener(relay), this);
+        }
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(relay), this);
         Bukkit.getPluginManager().registerEvents(new DeathListener(relay), this);
 
@@ -172,18 +178,28 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
     }
 
     /**
-     * /kurobridge 注册器挂载（LifecycleEvents.COMMANDS + BasicCommand）：paper-plugin.yml 的
-     * commands 块在 Paper 1.21.4 不受支持（PluginMeta 无 commands 字段），故走 Brigadier API。
-     * COMMANDS 事件在全部插件启用完成后触发（重注册幂等）；启用失败的实例由
-     * {@link #performKurobridgeReload} 的未启用守卫兜底，不产生半工作命令。
+     * /kurobridge 注册（对齐主仓 ADR-038 universal 化）：经典 plugin.yml 的 commands 块声明，
+     * onEnable 挂 Executor/TabCompleter（全版本可用，替代 paper-plugin.yml 时代的 Brigadier 注册）。
+     * 启用失败的实例由 {@link #performKurobridgeReload} 的未启用守卫兜底，不产生半工作命令。
      */
     private void registerKurobridgeCommand() {
-        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar()
-                .register("kurobridge", "KuroBridge 互通桥管理", List.of(), new KurobridgeCommand(this)));
+        PluginCommand command = getCommand("kurobridge");
+        if (command == null) {
+            // plugin.yml 的 commands 块缺失 = 构建产物不完整（资源被 shadowJar 漏装），立即显式失败
+            throw new IllegalStateException("plugin.yml 缺少 kurobridge 命令声明（commands 块），构建产物不完整");
+        }
+        KurobridgeCommand handler = new KurobridgeCommand(this);
+        command.setExecutor(handler);
+        command.setTabCompleter(handler);
+    }
+
+    @SuppressWarnings("deprecation") // getDescription()：26.x 标弃用，但全版本存留（getPluginMeta 1.19+ 才有）
+    private String pluginVersion() {
+        return getDescription().getVersion();
     }
 
     /**
-     * /kurobridge reload（Brigadier 主线程同步派发）：读盘→ConfigLoader 解析；失败→**保留旧配置**
+     * /kurobridge reload（Bukkit 主线程同步派发）：读盘→ConfigLoader 解析；失败→**保留旧配置**
      * 回显原因（文件缺失不重新生成——生成仅发生在启用时）；成功→绑定表 replace（集合变化自动触发
      * 既有 bindings_updated 广播）+ AdminTable 重建原子换入 relay → 按 D6 热冷矩阵回执（仅列出
      * 有变化的字段；token/ws/server.id 进程固定，明示待重启）。

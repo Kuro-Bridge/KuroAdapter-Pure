@@ -3,6 +3,7 @@ package com.kurobridge.pure.paper;
 
 import com.kurobridge.pure.core.business.WhitelistGateway;
 import com.kurobridge.pure.core.protocol.message.CommandResultBody;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -27,9 +28,9 @@ public final class PaperWhitelistGateway implements WhitelistGateway {
     public CompletableFuture<List<String>> list() {
         CommandResultBody result = dispatcher.execute("whitelist list");
         if (!result.ok()) {
-            return CompletableFuture.failedFuture(new IllegalStateException(result.error()));
+            return WhitelistGateway.failed(new IllegalStateException(result.error()));
         }
-        return CompletableFuture.completedFuture(result.output() == null ? List.of() : result.output());
+        return CompletableFuture.completedFuture(result.output() == null ? Collections.emptyList() : result.output());
     }
 
     @Override
@@ -44,7 +45,7 @@ public final class PaperWhitelistGateway implements WhitelistGateway {
 
     private static CompletableFuture<Void> voidResult(CommandResultBody result) {
         if (!result.ok()) {
-            return CompletableFuture.failedFuture(new IllegalStateException(result.error()));
+            return WhitelistGateway.failed(new IllegalStateException(result.error()));
         }
         return CompletableFuture.completedFuture(null);
     }

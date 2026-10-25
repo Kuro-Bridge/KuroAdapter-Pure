@@ -4,8 +4,8 @@
 
 ## /kurobridge reload
 
-- **注册**:`paper-plugin.yml` 在 Paper 1.21.4 不支持 commands 块(`PluginMeta` 无 commands 字段),故经 `LifecycleEvents.COMMANDS` + `BasicCommand`(Brigadier)注册;COMMANDS 事件在全部插件启用完成后触发,重注册幂等。命令描述"KuroBridge 互通桥管理",无别名。
-- **权限**:`kurobridge.reload`(paper-plugin.yml 声明 default op;控制台恒可)。execute 由 Brigadier 在**主线程同步派发**。
+- **注册**:经典 plugin.yml 的 commands 块声明 `kurobridge`(对齐主仓 ADR-038 universal 化,全版本可用),主类 onEnable 经 `getCommand(...).setExecutor/setTabCompleter` 挂载 `KurobridgeCommand`(实现 `CommandExecutor` + `TabCompleter`)。命令描述"KuroBridge 互通桥管理",无别名。
+- **权限**:`kurobridge.reload`(plugin.yml commands 块声明,permissions 块 default op;控制台恒可);旧版 CraftBukkit 对 commands 块 permission 的执行口径不一,execute 内显式复查兜底。onCommand 由 Bukkit 在**主线程同步派发**。
 - **行为**(`KurobridgeCommand.execute` → 插件主类 `performKurobridgeReload`):
   - 参数非 `["reload"]` → 回显 USAGE(命令现仅 reload 一个子命令);
   - 未启用守卫:插件未完成启用(配置非法或启动失败)→ 拒绝并说明;
@@ -26,8 +26,8 @@
 
 线程契约:仅在 Bukkit 主线程调用。执行完命令才组结果(同步完成 = 对端拿到真实执行结果)。双路径输出收集:
 
-1. **常规路径**:创建 `CollectingCommandSender`(收集型 sender,控制台语义:`hasPermission`/`isOp` 恒 true、名为 Console;adventure 各 `sendMessage(Component)` 变体最终汇入 `sendMessage(Identity, Component, MessageType)` 汇聚点)→ `Bukkit.dispatchCommand(sender, command)` → 收集回显行;
-2. **vanilla 回退路径**:Paper 的 `VanillaCommandWrapper` 只认内部 Craft* sender,自定义 sender 执行 vanilla 命令(如 `whitelist`、`version`)时抛"Cannot make ... a vanilla command listener"——按异常链识别该拒绝(`isVanillaListenerRejection`)后**回退真实 console sender 重派**;其反馈经 log4j 控制台流,由 `VanillaFeedbackCapture` 在执行窗口内挂载的收集型 appender 截取(**只收 `Server thread` 线程、attach/detach 窗口内的日志行**,两条路径互斥不重复);
+1. **常规路径**:创建 `CollectingCommandSender`(收集型 sender,控制台语义:`hasPermission`/`isOp` 恒 true、名为 Console;adventure 4.x 的 Audience 各 `sendMessage` 变体经默认方法链最终调用 `sendMessage(Component)`,虚分派先命中本类 override;不 override 三参 `(Identity, Component, MessageType)` 汇聚点——MessageType 在 adventure 5.x 已删除,保留 override 会在 26.x 类加载时抛 NoClassDefFoundError)→ `Bukkit.dispatchCommand(sender, command)` → 收集回显行;
+2. **vanilla 回退路径**:Paper 的 `VanillaCommandWrapper` 只认内部 Craft* sender,自定义 sender 执行 vanilla 命令(如 `whitelist`)时抛"a vanilla command listener"拒绝——**只认消息文案不认异常类型**(`isVanillaListenerRejection` 遍历 Throwable 链;Paper 26.x 起连 tps/list 等 Paper 命令也走 Brigadier 统一拒绝,且包裹异常类型漂移、不再是 bukkit `CommandException`,主仓 2026-10-25 cleanroom 实证)后**回退真实 console sender 重派**;其反馈经 log4j 控制台流,由 `VanillaFeedbackCapture` 在执行窗口内挂载的收集型 appender 截取(**只收 `Server thread` 线程、attach/detach 窗口内的日志行**,两条路径互斥不重复);
 3. 输出取收集行;Bukkit 路径为空则用 capture 行;命令本身抛异常(插件命令 bug 等)→ warn + `failure("命令执行异常:...")`,避免对端等到超时。
 
 已知边界:`version` 等命令的异步余量输出直落控制台、不进回执(收集窗口设计边界)——见 [limits.md](../architecture/limits.md)。

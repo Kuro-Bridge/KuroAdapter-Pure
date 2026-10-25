@@ -11,6 +11,9 @@ import com.kurobridge.pure.core.protocol.message.JoinBody;
 import com.kurobridge.pure.core.protocol.message.LeaveBody;
 import com.kurobridge.pure.core.protocol.message.QueryResultBody;
 import com.kurobridge.pure.core.protocol.message.StatusBody;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -20,7 +23,7 @@ import java.util.Set;
 public final class OutboundFrames {
 
     /** 出帧已知 type 清单（hello_ack/pong/chat/join/leave/death/status/bindings_updated/command_result/query_result）。 */
-    public static final Set<String> KNOWN_TYPES = Set.of(
+    public static final Set<String> KNOWN_TYPES = Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(
             "hello_ack",
             "pong",
             "chat",
@@ -30,24 +33,45 @@ public final class OutboundFrames {
             "status",
             "bindings_updated",
             "command_result",
-            "query_result");
+            "query_result")));
 
     private OutboundFrames() {}
 
     /** 按已知 type 分发解析（金样本门禁用）；未知 type 抛 FrameValidationException。 */
     public static void validate(Frame frame) {
         switch (frame.type()) {
-            case "hello_ack" -> helloAck(frame);
-            case "pong" -> pong(frame);
-            case "chat" -> gameChat(frame);
-            case "join" -> join(frame);
-            case "leave" -> leave(frame);
-            case "death" -> death(frame);
-            case "status" -> status(frame);
-            case "bindings_updated" -> bindingsUpdated(frame);
-            case "command_result" -> commandResult(frame);
-            case "query_result" -> queryResult(frame);
-            default -> throw new FrameValidationException(String.format("未知出帧 type：%s", frame.type()));
+            case "hello_ack":
+                helloAck(frame);
+                break;
+            case "pong":
+                pong(frame);
+                break;
+            case "chat":
+                gameChat(frame);
+                break;
+            case "join":
+                join(frame);
+                break;
+            case "leave":
+                leave(frame);
+                break;
+            case "death":
+                death(frame);
+                break;
+            case "status":
+                status(frame);
+                break;
+            case "bindings_updated":
+                bindingsUpdated(frame);
+                break;
+            case "command_result":
+                commandResult(frame);
+                break;
+            case "query_result":
+                queryResult(frame);
+                break;
+            default:
+                throw new FrameValidationException(String.format("未知出帧 type：%s", frame.type()));
         }
     }
 

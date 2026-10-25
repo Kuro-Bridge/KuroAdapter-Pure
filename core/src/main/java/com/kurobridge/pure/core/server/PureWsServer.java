@@ -7,7 +7,7 @@ import com.kurobridge.pure.core.protocol.ProtocolVersions;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -42,7 +42,9 @@ public final class PureWsServer extends WebSocketServer {
     public PureWsServer(String host, int port, SessionContext context) {
         super(
                 new InetSocketAddress(host != null ? host : "0.0.0.0", port),
-                List.of(new Draft_6455(List.of(), List.of(new Protocol(ProtocolVersions.WS_SUBPROTOCOL)))));
+                Arrays.asList(new Draft_6455(
+                        Collections.emptyList(),
+                        Collections.singletonList(new Protocol(ProtocolVersions.WS_SUBPROTOCOL)))));
         this.context = context;
     }
 
@@ -182,7 +184,13 @@ public final class PureWsServer extends WebSocketServer {
     }
 
     /** WebSocket → WsConnection 适配（send 抛错视为连接已死，由 onClose 收尾）。 */
-    private record JavaWebSocketConnection(WebSocket socket) implements WsConnection {
+    private static final class JavaWebSocketConnection implements WsConnection {
+
+        private final WebSocket socket;
+
+        JavaWebSocketConnection(WebSocket socket) {
+            this.socket = socket;
+        }
 
         @Override
         public void send(String text) {

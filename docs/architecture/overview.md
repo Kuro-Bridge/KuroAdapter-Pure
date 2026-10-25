@@ -26,7 +26,7 @@ KuroBridge Pure(KuroBridge 纯净线,仓库名 KuroAdapter-Pure)是**纯 Java �
 | 配置 | 含 runtime / embedded 段 | 去掉两段,其余形状对齐([core-config.md](../modules/core-config.md)) |
 | 嵌入式 | 可内置协议端 | 无——外部对端连入 |
 
-保留不变:Gradle 多模块形态、工具链(Java 25 / release 21)、Spotless(palantir)、shadow fat JAR 产物。
+保留不变:Gradle 多模块形态、工具链(Java 25)、Spotless(palantir)、shadow fat JAR 产物。universal 基线(对齐主仓 ADR-038):`:core`/`:paper` main 源集 `--release 8` + 经典 plugin.yml,单 jar 兼容 Paper 1.12.2 ~ 26.3。
 
 ## 业务扩展点
 
@@ -43,11 +43,12 @@ KuroBridge Pure(KuroBridge 纯净线,仓库名 KuroAdapter-Pure)是**纯 Java �
 ```text
 core/src/main/java/com/kurobridge/pure/core/
 ├── protocol/            帧模型与编解码(Frame/FrameCodec/Frames)、收发校验(In/OutboundFrames)、
-│   │                    版本(ProtocolVersions/VersionCompat)、消息体(message/ 13 record)
+│   │                    版本(ProtocolVersions/VersionCompat)、消息体(message/ 13 型)
 │   └── server/          PureWsServer、PeerSession、SessionContext、调度/超时/日志抽象、IdleTracker
 └── business/            PureConfig/ConfigLoader/ConfigBootstrap/ConfigReloadReport、
                          BindingStore/ForwardRules/WhitelistGateway 接口
 paper/src/main/java/com/kurobridge/pure/paper/
-                         插件主类、PaperRelay、三个事件监听、命令与执行管线、调度/日志适配
-paper/src/main/resources/paper-plugin.yml
+                         插件主类、PaperRelay、聊天双路径监听 + 进退服/死亡监听、命令与执行管线、
+                         Compat 探测、PlainText 兼容链、调度/日志适配
+paper/src/main/resources/plugin.yml
 ```

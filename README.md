@@ -9,7 +9,7 @@
 <p>
   <img src="https://img.shields.io/badge/角色-WS%20服务端-6366F1?style=flat-square&labelColor=18181B" alt="角色：WS 服务端">&emsp;
   <img src="https://img.shields.io/badge/协议-kurobridge--ws%20v0.4.0-0EA5E9?style=flat-square&labelColor=18181B" alt="协议：kurobridge-ws v0.4.0">&emsp;
-  <img src="https://img.shields.io/badge/Java-工具链%2025%20·%20release%2021-10B981?style=flat-square&labelColor=18181B" alt="Java：工具链 25 · release 21">&emsp;
+  <img src="https://img.shields.io/badge/Java-工具链%2025%20·%20release%208-10B981?style=flat-square&labelColor=18181B" alt="Java：工具链 25 · release 8">&emsp;
   <img src="https://img.shields.io/badge/许可-MIT-8B5CF6?style=flat-square&labelColor=18181B" alt="许可：MIT">
 </p>
 
@@ -115,7 +115,7 @@ flowchart TB
 
 * 无内嵌协议端：外部对端（napukettoqq / Adapter-koishi 等）连入
 
-* 平台面：Paper（1.21.4 真机验证）
+* 平台面：Paper 1.12.2 ~ 26.3（Java 8 字节码 + 经典 plugin.yml，对齐主仓 ADR-038；26.3 / 26.2 / 1.21.11 / 1.16.5 真机冒烟验证，1.12.2 与 1.13 ~ 1.16.4 无 Java 8 runtime 未上机，字节码与 API 层已覆盖）
 
 * 适合部署极简、无 Node 依赖的服务器
 
@@ -138,7 +138,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 ## 当前能力
 
-已接线（回环单测 + 编译门禁 + Paper 1.21.4 真机冒烟验证）：
+已接线（回环单测 + 编译门禁 + Paper 26.3 / 26.2 / 1.21.11 / 1.16.5 真机冒烟验证）：
 
 * 配置读取与**首启自动生成**（`plugins/KuroBridgePure/config.json`，生成件即文档）；
 
@@ -211,9 +211,9 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 * **待重启**：`token` / `ws.host` / `ws.port` / `server.id`（进程固定，回执明示）。
 
-* 权限：`kurobridge.reload`（paper-plugin.yml 声明 default op；控制台恒可）。
+* 权限：`kurobridge.reload`（plugin.yml 声明 default op；控制台恒可）。
 
-* 注册方式：Paper 1.21.4 的 paper-plugin.yml **不支持 `commands` 块**，命令经 Lifecycle / Brigadier API（`LifecycleEvents.COMMANDS` + `BasicCommand`）注册。
+* 注册方式：经典 plugin.yml 的 `commands` 块声明 + `CommandExecutor`/`TabCompleter`（对齐主仓 ADR-038 universal 化，1.12.2 ~ 26.3 全版本可用）。
 
 * 行为：读盘重解析 → 解析失败则**保留旧配置**并回显原因（文件缺失不重新生成）→ 成功则按上述语义热更并回执【已热更】/【待重启】两组。
 
@@ -263,7 +263,7 @@ flowchart TB
 
 * **金样本一致性门禁**：`:core` 测试 pin KuroProtocol v0.4 金样本 16 份（`core/src/test/resources/fixtures/`），`FixtureConformanceTest` 逐帧对表；`mise run fixtures` 从 npm 包机械刷新。测试基线：`:core` 10 个测试类 / 103 用例。
 
-* **工具链**：Java 25 / `release 21` · Gradle 9.7 · Spotless（palantir）· JUnit 5 · `-Xlint:all -Werror`。
+* **工具链**：Java 25 / `release 8`（`:core`/`:paper` main 源集，Java 8 字节码）· Gradle 9.7 · Spotless（palantir）· JUnit 5 · `-Xlint:all -Werror`。
 
 * 文档体系：[docs/README.md](docs/README.md)（架构 / 协议规格 / 模块机制 / 开发维护）；工程规范：[AGENTS.md](AGENTS.md)。
 

@@ -1,6 +1,8 @@
 // BindingStore 配置驱动实现：PureConfig.channels 支撑 + 整表替换通知位（热重载用）
 package com.kurobridge.pure.core.business;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -16,7 +18,7 @@ public final class ConfigBindingStore implements BindingStore {
     private final List<Runnable> listeners = new CopyOnWriteArrayList<>();
 
     public ConfigBindingStore(List<String> channels) {
-        this.channels = List.copyOf(channels);
+        this.channels = Collections.unmodifiableList(new ArrayList<>(channels));
     }
 
     @Override
@@ -39,7 +41,7 @@ public final class ConfigBindingStore implements BindingStore {
      * 「变化才推」语义）；相同集合替换 = no-op 返回 false。
      */
     public boolean replace(List<String> next) {
-        List<String> candidate = List.copyOf(next);
+        List<String> candidate = Collections.unmodifiableList(new ArrayList<>(next));
         if (candidate.equals(channels)) {
             return false;
         }

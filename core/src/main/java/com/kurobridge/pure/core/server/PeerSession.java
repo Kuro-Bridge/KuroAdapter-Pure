@@ -15,7 +15,8 @@ import com.kurobridge.pure.core.protocol.message.HelloBody;
 import com.kurobridge.pure.core.protocol.message.PlatformChatBody;
 import com.kurobridge.pure.core.protocol.message.QueryResultBody;
 import com.kurobridge.pure.core.protocol.message.StatusBody;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -164,7 +165,8 @@ public final class PeerSession {
                 id,
                 context.serverId(),
                 context.serverVersion(),
-                List.copyOf(context.channelBindings().get()))));
+                Collections.unmodifiableList(
+                        new ArrayList<>(context.channelBindings().get())))));
         String clientSuffix = body.client() == null ? "" : String.format("，client=%s", body.client());
         context.logger().info(String.format("对端 %s 握手成功（platform=%s%s）", body.peerId(), body.platform(), clientSuffix));
     }
@@ -261,18 +263,22 @@ public final class PeerSession {
     /** query 请求：协议层本地作答（status 用最近快照；bindings 用绑定表实时快照）。 */
     private void answerQuery(String id, String kind) {
         switch (kind) {
-            case "status" -> {
+            case "status": {
                 Optional<StatusBody> snapshot = context.hooks().latestStatus();
                 QueryResultBody result = snapshot.map(status -> QueryResultBody.success(Frames.statusNode(status)))
                         .orElseGet(() -> QueryResultBody.failure("no status yet"));
                 connection.send(FrameCodec.encode(Frames.queryResult(id, result)));
+                break;
             }
-            case "bindings" ->
+            case "bindings":
                 connection.send(FrameCodec.encode(Frames.queryResult(
                         id,
                         QueryResultBody.success(
                                 Frames.stringList(context.channelBindings().get())))));
-            default -> context.logger().warn(String.format("未知 query kind：%s", kind));
+                break;
+            default:
+                context.logger().warn(String.format("未知 query kind：%s", kind));
+                break;
         }
     }
 

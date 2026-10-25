@@ -5,7 +5,6 @@ import com.kurobridge.pure.core.protocol.message.CommandResultBody;
 import java.util.List;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -33,12 +32,15 @@ public final class PaperCommandDispatcher {
             capture.attach();
             try {
                 Bukkit.dispatchCommand(sender, command);
-            } catch (CommandException commandRejected) {
+            } catch (RuntimeException commandRejected) {
                 if (!isVanillaListenerRejection(commandRejected)) {
                     throw commandRejected;
                 }
-                // Paper 的 VanillaCommandWrapper 拒绝自定义 sender：vanilla 命令回退真实
-                // console sender 执行，输出经 log4j 控制台流由 capture 收集
+                // Paper 的 VanillaCommandWrapper 拒绝自定义 sender（仅认内部 Craft* 类型，
+                // DEBT1-NOTES D1-04；26.x 起连 tps/list 等 Paper 命令也走 Brigadier 统一
+                // 拒绝，且异常不再是 bukkit CommandException——主仓 2026-10-25 cleanroom 实证）：
+                // vanilla 命令回退真实 console sender 执行，输出经 log4j 控制台流由
+                // capture 收集
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
             }
         } catch (RuntimeException executionFailed) {
@@ -55,12 +57,15 @@ public final class PaperCommandDispatcher {
         return CommandResultBody.success(output);
     }
 
-    /** 是否为 VanillaCommandWrapper.getListener 拒绝自定义 sender（回退 console 的信号）。 */
-    private static boolean isVanillaListenerRejection(CommandException exception) {
+    /**
+     * 是否为 VanillaCommandWrapper.getListener 拒绝自定义 sender（回退 console 的信号）。
+     * 判据只认消息不认异常类型——Paper 26.x 换了包裹异常类型且不再是 bukkit
+     * CommandException（主仓 2026-10-25 cleanroom 实证），消息文案是该拒绝点的稳定特征。
+     */
+    private static boolean isVanillaListenerRejection(Throwable exception) {
         Throwable cause = exception;
         while (cause != null) {
-            if (cause instanceof IllegalArgumentException
-                    && String.valueOf(cause.getMessage()).contains("a vanilla command listener")) {
+            if (String.valueOf(cause.getMessage()).contains("a vanilla command listener")) {
                 return true;
             }
             cause = cause.getCause();
