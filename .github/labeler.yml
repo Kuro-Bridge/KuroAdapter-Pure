@@ -1,0 +1,45 @@
+# PR 自动打标配置（actions/labeler v5，由 triage workflow 消费）。
+#
+# 仅覆盖「范围」与「文档 / 工具链」维度：类型标签由 issue 模板自带，
+# 优先级 / 破坏性 / 状态维度由维护者手动维护。glob 未命中时不出标签；
+# sync-labels 关闭，只增不减，手动摘除不会被后续 push 加回。
+#
+# 前导 / 锚定仓库根级文件（否则会匹配到各模块内的同名文件）。
+# core 只锚 src/main 与模块构建脚本：动金样本 pin 的 PR 单独打
+# module: fixtures，不再误挂 module: core。
+
+"module: core":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "core/src/main/**"
+          - "/core/build.gradle.kts"
+
+"module: paper":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "paper/src/main/**"
+          - "/paper/build.gradle.kts"
+
+"module: fixtures":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "core/src/test/resources/fixtures/**"
+
+"documentation":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/*.md"
+
+"chore":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "/*.kts"
+          - "/gradle.properties"
+          - "/gradle/**"
+          - "/gradlew*"
+          - "/mise.toml"
+
+"ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"

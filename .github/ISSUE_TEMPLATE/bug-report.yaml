@@ -1,0 +1,63 @@
+# Bug 报告模板：类型标签 bug 自带，范围留给正文描述，模块由维护者补挂。
+
+name: Bug 报告
+description: 报告 KuroBridge 纯净线（kuroadapter-pure）的问题
+title: "Bug: "
+labels:
+  - bug
+body:
+  - type: dropdown
+    attributes:
+      label: 受影响的范围
+      description: 问题落在哪个模块；涉及多个时在补充信息里说明。
+      options:
+        - 协议层核心（:core）
+        - Paper 适配层（:paper）
+        - 配置与指令
+        - 金样本契约
+        - 构建与工具链
+        - 不确定
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 问题描述
+      description: 请简明扼要地描述遇到了什么问题。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 复现步骤
+      description: 请描述如何触发这个问题，越具体越好。
+      placeholder: |
+        1. 装入 JAR 并配置 '...'
+        2. 对端连入后 '...'
+        3. 观察到 '...'
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 期望行为
+      description: 请描述你期望发生的行为。
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 相关日志与截图
+      description: 请尽量附上服务端日志、对端日志或相关截图。日志较长时只保留关键部分，并用代码块包裹。
+  - type: textarea
+    attributes:
+      label: 运行环境
+      description: 请填写运行环境的版本信息。
+      value: |
+        - 操作系统: <!-- 例如 Windows 11 / Ubuntu 24.04 -->
+        - Paper 版本: <!-- 例如 1.21.4 -->
+        - kuroadapter-pure 版本: <!-- 例如 0.1.0 -->
+        - Java 版本: <!-- 例如 25 -->
+        - 对端与协议版本: <!-- 例如 koishi-plugin-kurobridge 0.2.0 / kurobridge-ws 0.4.0 -->
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: 补充信息
+      description: 其他需要补充的上下文，例如配置片段（注意隐去 token 等敏感信息）。
