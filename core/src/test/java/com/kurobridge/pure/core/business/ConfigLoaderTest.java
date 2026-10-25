@@ -145,9 +145,31 @@ class ConfigLoaderTest {
     }
 
     @Test
+    void JSONC_行注释_块注释_行尾逗号均可解析() {
+        String jsonc = "// 顶部引导注释\n"
+                + "{\n"
+                + "    /* 块注释：channels 是绑定频道 */\n"
+                + "    \"channels\": [\n"
+                + "        \"10001\", // 行尾注释\n"
+                + "        \"10002\",\n"
+                + "    ],\n"
+                + "    \"token\": \"s3cret\", // 对端须同配\n"
+                + "}\n";
+        PureConfig config = ConfigLoader.parse(jsonc);
+        assertEquals(List.of("10001", "10002"), config.channels());
+        assertEquals("s3cret", config.token());
+    }
+
+    @Test
+    void JSONC_注释未闭合_非法JSON_仍抛ConfigException() {
+        assertThrows(ConfigException.class, () -> ConfigLoader.parse("{\"channels\":[] /* 未闭合"));
+        assertThrows(ConfigException.class, () -> ConfigLoader.parse("{\"channels\":[,]}"));
+    }
+
+    @Test
     void 从文件加载_读写失败抛ConfigException(@TempDir Path tempDir) throws IOException {
-        Path file = tempDir.resolve("config.json");
-        Files.writeString(file, "{\"channels\":[\"10001\"],\"token\":\"s3cret\"}");
+        Path file = tempDir.resolve("config.jsonc");
+        Files.writeString(file, "// 服主注释\n{\"channels\":[\"10001\"],\"token\":\"s3cret\"}");
         PureConfig config = ConfigLoader.load(file);
         assertEquals(List.of("10001"), config.channels());
         assertEquals("s3cret", config.token());

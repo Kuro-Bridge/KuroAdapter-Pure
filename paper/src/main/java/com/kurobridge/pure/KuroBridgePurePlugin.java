@@ -35,7 +35,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * KuroBridgePure 插件入口（零协议逻辑——协议层与业务骨架在 :core，本类只做装配）。
  *
- * <p>onEnable：命令注册器挂载 → dataFolder 建目录 → 配置引导（config.json 缺失则生成安全默认，
+ * <p>onEnable：命令注册器挂载 → dataFolder 建目录 → 配置引导（config.jsonc 缺失则生成带注释模板，
+ * 旧版 config.json 回退读取，ADR-040 对齐
  * 随后经 ConfigLoader 单一权威解析；**非法配置/空 token/端口绑定失败一律 SEVERE 后中止启用**，
  * 不静默降级、不给半工作状态）→ 组装绑定表/调度器/hooks → 启动 PureWsServer（动态端口时日志
  * 实际端口）→ 注册监听器三件 + 绑定变更监听。onDisable：server.shutdown()（已握手对端
@@ -59,7 +60,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         registerKurobridgeCommand();
-        Path configFile = getDataFolder().toPath().resolve("config.json");
+        Path configFile = ConfigBootstrap.resolveConfigFile(getDataFolder().toPath());
         PureConfig config;
         try {
             config = loadOrCreateConfig(configFile);
@@ -157,9 +158,10 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
     }
 
     /**
-     * 配置引导（D1/D2/D8）：目录缺失建目录 → 文件缺失生成安全默认（CREATE_NEW 防覆盖，token
-     * 随机 32 hex）→ ConfigLoader 单一权威解析 → 空 token 门禁（拒绝监听，指路文案）。任何一步
-     * 不合格抛 ConfigException，由 onEnable 统一 SEVERE 后中止启用。
+     * 配置引导（D1/D2/D8 + ADR-040）：目录缺失建目录 → 文件缺失生成带注释 JSONC 模板
+     * （CREATE_NEW 防覆盖，token 随机 32 hex；旧版 config.json 回退读取不迁移）→ ConfigLoader
+     * 单一权威解析 → 空 token 门禁（拒绝监听，指路文案）。任何一步不合格抛 ConfigException，
+     * 由 onEnable 统一 SEVERE 后中止启用。
      */
     private PureConfig loadOrCreateConfig(Path configFile) {
         if (!getDataFolder().exists() && !getDataFolder().mkdirs()) {
@@ -167,9 +169,11 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
         }
         if (ConfigBootstrap.ensureConfigFile(configFile)) {
             getLogger()
-                    .info(() -> "已生成默认配置：" + configFile + "（token 为随机 32 位十六进制，对端须从该文件"
+                    .info(() -> "已生成带注释的默认配置：" + configFile + "（token 为随机 32 位十六进制，对端须从该文件"
                             + "抄取并配置同一 token；ws 默认环回 " + ConfigBootstrap.DEFAULT_WS_HOST + ":"
                             + ConfigBootstrap.DEFAULT_WS_PORT + "）");
+        } else if (ConfigBootstrap.isLegacyConfig(configFile)) {
+            getLogger().info(() -> "已从旧版 config.json 读取（改名为 config.jsonc 可获得注释模板）：" + configFile);
         }
         PureConfig config = ConfigLoader.load(configFile);
         getLogger().info(() -> "已加载配置：" + configFile);
@@ -210,7 +214,7 @@ public final class KuroBridgePurePlugin extends JavaPlugin {
             sender.sendMessage("KuroBridgePure 未启用（配置非法或启动失败），无法重载");
             return;
         }
-        Path configFile = getDataFolder().toPath().resolve("config.json");
+        Path configFile = ConfigBootstrap.resolveConfigFile(getDataFolder().toPath());
         PureConfig next;
         try {
             next = ConfigLoader.load(configFile);

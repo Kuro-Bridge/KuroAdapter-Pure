@@ -16,7 +16,7 @@ KuroBridge Pure(KuroBridge 纯净线,仓库名 KuroAdapter-Pure):纯 Java 实现
 | [session.md](protocol/session.md) | 握手状态机、鉴权、超时、关闭码、未知帧容忍 |
 | **modules/** —— 模块机制 | |
 | [core-server.md](modules/core-server.md) | PureWsServer:子协议门禁、绑定等待、连接回调、广播契约、会话装配 |
-| [core-config.md](modules/core-config.md) | 配置体系:config.json 规范、首启引导与 token 门禁、绑定存储、热重载矩阵 |
+| [core-config.md](modules/core-config.md) | 配置体系:config.jsonc 规范(JSONC)、首启注释模板与 token 门禁、旧文件回退、绑定存储、热重载矩阵 |
 | [paper-plugin.md](modules/paper-plugin.md) | 插件生命周期、事件接线(含权限静音位)、Relay 出帧与入站 |
 | [paper-commands.md](modules/paper-commands.md) | `/kurobridge reload`、command 帧执行管线(双路径输出收集)、白名单网关 |
 | **development/** —— 开发维护 | |
@@ -32,5 +32,5 @@ KuroBridge Pure(KuroBridge 纯净线,仓库名 KuroAdapter-Pure):纯 Java 实现
 ## 约定
 
 - 代码即事实:全部文档以当前源码为准,机制描述均对应到类/方法;与代码冲突时以代码为准并回改文档。
-- 对外产品叙事用 **KuroBridge Pure**;技术标识(`kuroadapter-pure`、`plugins/KuroBridgePure/config.json`、`kurobridge-ws` 等)保留原样。
+- 对外产品叙事用 **KuroBridge Pure**;技术标识(`kuroadapter-pure`、`plugins/KuroBridgePure/config.jsonc`、`kurobridge-ws` 等)保留原样。
 - 全文不使用 Emoji。

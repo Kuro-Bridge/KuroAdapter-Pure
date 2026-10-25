@@ -140,7 +140,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 已接线（回环单测 + 编译门禁 + Paper 26.3 / 26.2 / 1.21.11 / 1.16.5 真机冒烟验证）：
 
-* 配置读取与**首启自动生成**（`plugins/KuroBridgePure/config.json`，生成件即文档）；
+* 配置读取与**首启自动生成**（`plugins/KuroBridgePure/config.jsonc`，JSONC 注释模板即文档；旧版 `config.json` 回退读取）；
 
 * WS 服务端：子协议协商 / 握手 / 鉴权 / 心跳；端口绑定失败 SEVERE 指路后中止启用；
 

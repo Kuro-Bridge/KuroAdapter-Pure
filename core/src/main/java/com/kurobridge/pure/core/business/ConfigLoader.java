@@ -1,9 +1,11 @@
-// 配置加载（Jackson）：多余字段剥离、缺字段补缺省、非法值抛类型化 ConfigException
+// 配置加载（Jackson，JSONC）：多余字段剥离、缺字段补缺省、非法值抛类型化 ConfigException
 package com.kurobridge.pure.core.business;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -18,10 +20,18 @@ import java.util.Map;
  * 配置解析（纯函数）。行为对齐主仓 bridge/core/src/business/config.ts 的 parseConfig
  * （剔除 runtime/embedded 段）：channels/admins 各自去重保序；server.id 缺省兜底
  * {@link PureConfig#DEFAULT_SERVER_ID}；非法形状/内容抛 ConfigException。
+ *
+ * <p>JSONC（ADR-040 对齐）：允许行注释（{@code //}）、块注释（C 风格）与行尾逗号
+ * （Jackson {@link JsonReadFeature} 机关，非自写剥离器）——生成模板以注释即文档。
  */
 public final class ConfigLoader {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            // Jackson 的 ALLOW_JAVA_COMMENTS 映射 JsonParser.Feature.ALLOW_COMMENTS，同时覆盖
+            // `//` 与 `/* */` 两种注释（2.22 无独立 ALLOW_C_STYLE_COMMENTS 常量）
+            .enable(JsonReadFeature.ALLOW_JAVA_COMMENTS)
+            .enable(JsonReadFeature.ALLOW_TRAILING_COMMA)
+            .build();
 
     private static final String EXPECTED_SHAPE =
             "配置不合法（期望 { channels: string[], token?: string, admins?: {channel, users}[], "

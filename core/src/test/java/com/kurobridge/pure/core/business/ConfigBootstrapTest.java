@@ -1,4 +1,4 @@
-// ConfigBootstrap：首启生成（D1/D3/D7）与 token 门禁（D2）矩阵（@TempDir 纯文件逻辑）
+// ConfigBootstrap：首启生成（D1/D3/D7）、JSONC 模板（ADR-040）与 token 门禁（D2）矩阵（@TempDir 纯文件逻辑）
 package com.kurobridge.pure.core.business;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,10 +16,16 @@ import org.junit.jupiter.api.io.TempDir;
 class ConfigBootstrapTest {
 
     @Test
-    void 缺失时生成安全默认且可被ConfigLoader解析(@TempDir Path tempDir) {
-        Path file = tempDir.resolve("config.json");
+    void 缺失时生成带注释模板且可被ConfigLoader解析(@TempDir Path tempDir) throws IOException {
+        Path file = tempDir.resolve("config.jsonc");
 
         assertTrue(ConfigBootstrap.ensureConfigFile(file), "文件缺失应生成");
+        String text = new String(Files.readAllBytes(file), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(text.contains("//"), "生成件应是带注释的 JSONC 模板（注释即文档）");
+        assertTrue(text.contains("\"channels\""), "模板应含 channels 引导");
+        assertTrue(text.contains("\"token\""), "模板应含 token 字段");
+        assertTrue(text.contains("行尾逗号"), "模板应说明 JSONC 支持范围");
+
         PureConfig config = ConfigLoader.load(file); // round-trip：生成件即文档，经单一权威解析继续启用
         assertEquals(List.of(), config.channels());
         assertFalse(config.token().isEmpty(), "生成件带随机非空 token（安全默认，非裸奔）");
@@ -32,20 +38,21 @@ class ConfigBootstrapTest {
     }
 
     @Test
-    void token为32位hex且两次生成互不相同(@TempDir Path tempDirA, @TempDir Path tempDirB) {
-        ConfigBootstrap.ensureConfigFile(tempDirA.resolve("config.json"));
-        ConfigBootstrap.ensureConfigFile(tempDirB.resolve("config.json"));
+    void token为32位hex且两次生成互不相同() {
+        String textA = ConfigBootstrap.defaultConfigJsonc();
+        String textB = ConfigBootstrap.defaultConfigJsonc();
 
-        String tokenA = ConfigLoader.load(tempDirA.resolve("config.json")).token();
-        String tokenB = ConfigLoader.load(tempDirB.resolve("config.json")).token();
+        String tokenA = ConfigLoader.parse(textA).token();
+        String tokenB = ConfigLoader.parse(textB).token();
         assertTrue(tokenA.matches("[0-9a-f]{32}"), "token 应为 32 位小写 hex（16 字节 SecureRandom）");
         assertTrue(tokenB.matches("[0-9a-f]{32}"));
         assertFalse(tokenA.equals(tokenB), "两次生成应互不相同");
+        assertFalse(textA.contains("${"), "模板占位符须全部替换：" + textA);
     }
 
     @Test
     void 既有文件字节不动(@TempDir Path tempDir) throws IOException {
-        Path file = tempDir.resolve("config.json");
+        Path file = tempDir.resolve("config.jsonc");
         String existing = "{\"channels\":[\"10001\"],\"token\":\"s3cret\",\"comment\":\"服主手写\"}";
         Files.writeString(file, existing);
 
@@ -56,7 +63,7 @@ class ConfigBootstrapTest {
 
     @Test
     void 父目录一并创建(@TempDir Path tempDir) {
-        Path file = tempDir.resolve("KuroBridgePure").resolve("nested").resolve("config.json");
+        Path file = tempDir.resolve("KuroBridgePure").resolve("nested").resolve("config.jsonc");
 
         assertTrue(ConfigBootstrap.ensureConfigFile(file));
 
@@ -67,17 +74,36 @@ class ConfigBootstrapTest {
     void 目录创建失败抛ConfigException指路(@TempDir Path tempDir) throws IOException {
         Path blocker = tempDir.resolve("blocker");
         Files.writeString(blocker, "同名的普通文件阻挡目录创建");
-        Path file = blocker.resolve("config.json");
+        Path file = blocker.resolve("config.jsonc");
 
         ConfigException failure = assertThrows(ConfigException.class, () -> ConfigBootstrap.ensureConfigFile(file));
         assertTrue(failure.getMessage().contains("blocker"), "报错须指路被阻挡的路径：" + failure.getMessage());
+    }
+
+    // ---- 路径解析（ADR-040：jsonc 优先、旧版回退、皆缺指向生成目标）----
+
+    @Test
+    void 路径解析_jsonc优先_旧版回退_皆缺返回jsonc(@TempDir Path tempDir) throws IOException {
+        Path jsonc = tempDir.resolve(ConfigBootstrap.CONFIG_FILE_NAME);
+        Path legacy = tempDir.resolve(ConfigBootstrap.LEGACY_CONFIG_FILE_NAME);
+
+        assertEquals(jsonc, ConfigBootstrap.resolveConfigFile(tempDir), "两者皆缺 → 指向首启生成目标");
+        assertFalse(ConfigBootstrap.isLegacyConfig(jsonc));
+
+        Files.writeString(legacy, "{\"channels\":[\"10001\"],\"token\":\"s3cret\"}");
+        assertEquals(legacy, ConfigBootstrap.resolveConfigFile(tempDir), "仅有旧版 → 回退读取");
+        assertTrue(ConfigBootstrap.isLegacyConfig(legacy));
+        assertEquals(List.of("10001"), ConfigLoader.load(legacy).channels(), "旧版 JSON 是 JSONC 子集，原样可读");
+
+        Files.writeString(jsonc, "{\"channels\":[\"10002\"]}");
+        assertEquals(jsonc, ConfigBootstrap.resolveConfigFile(tempDir), "两者皆在 → jsonc 优先");
     }
 
     // ---- requireToken（D2：空 token 拒绝监听，指路文案）----
 
     @Test
     void requireToken_空token抛指路_非空放行(@TempDir Path tempDir) {
-        Path file = tempDir.resolve("config.json");
+        Path file = tempDir.resolve("config.jsonc");
         PureConfig empty = ConfigLoader.parse("{\"channels\":[]}"); // 缺失 token → ""
 
         ConfigException failure = assertThrows(ConfigException.class, () -> ConfigBootstrap.requireToken(empty, file));
