@@ -10,7 +10,7 @@ allprojects {
     // 坐标单一持有：root 与 subprojects 同源（Gradle 的 group/version 不自动继承，
     // 此前根上一份 + subprojects 里一份各写各的，收敛于此一处）
     group = "com.kurobridge"
-    version = "0.1.0"
+    version = "1.0.0"
 
     repositories {
         // Paper API（compileOnly）等

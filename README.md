@@ -130,7 +130,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 * 构建入口 = mise tasks（定义于 `mise.toml [tasks]`，经 `mise exec java@25` 保证 JDK 25）；偶用 gradle 原生命令：`mise exec java@25 -- ./gradlew <task>`。
 
-* 唯一可装产物：`paper/build/libs/kuroadapter-pure-0.1.0.jar`（shadowJar，内含 `:core`；薄壳与根空壳 jar 已在构建脚本中禁用），丢进 Paper 服务器 `plugins/` 即可。
+* 唯一可装产物：`paper/build/libs/kuroadapter-pure-1.0.0.jar`（shadowJar，内含 `:core`；薄壳与根空壳 jar 已在构建脚本中禁用），丢进 Paper 服务器 `plugins/` 即可。
 
 * 坑：`build` 目标下的 shadowJar 可能因 up-to-date 被跳过（jar mtime 不刷新）——需要确定性重打时用 `mise run jar`（先 clean）。
 
@@ -237,7 +237,7 @@ mise run jar      # 确定性重打 fat JAR：clean + :paper:shadowJar
 
 ```mermaid
 flowchart TB
-    subgraph Plugin ["Paper 插件 · 单 JVM 进程（kuroadapter-pure-0.1.0.jar）"]
+    subgraph Plugin ["Paper 插件 · 单 JVM 进程（kuroadapter-pure-1.0.0.jar）"]
         direction TB
         Paper["<b>:paper · Paper 适配层</b><br/><sub>插件生命周期 · Bukkit 事件 / 命令 / 调度 / 白名单桥接</sub>"]
         Core["<b>:core · 协议层 + 业务骨架（零 Bukkit API）</b><br/><sub>帧编解码 · 握手 / 版本协商 / 鉴权 / 心跳 · 未知帧容忍</sub>"]
@@ -261,7 +261,7 @@ flowchart TB
 
 * **`:paper`**：Paper 适配层——插件生命周期 + Bukkit 事件 / 命令 / 调度 / 白名单桥接。
 
-* **金样本一致性门禁**：`:core` 测试 pin KuroProtocol v0.4 金样本 16 份（`core/src/test/resources/fixtures/`），`FixtureConformanceTest` 逐帧对表；`mise run fixtures` 从 npm 包机械刷新。测试基线：`:core` 10 个测试类 / 103 用例。
+* **金样本一致性门禁**：`:core` 测试 pin KuroProtocol v0.4 金样本 16 份（`core/src/test/resources/fixtures/`），`FixtureConformanceTest` 逐帧对表；`mise run fixtures` 从 npm 包机械刷新。测试基线：`:core` 10 个测试类 / 106 用例。
 
 * **工具链**：Java 25 / `release 8`（`:core`/`:paper` main 源集，Java 8 字节码）· Gradle 9.7 · Spotless（palantir）· JUnit 5 · `-Xlint:all -Werror`。
 
@@ -293,7 +293,7 @@ flowchart TB
 
 ## English
 
-KuroAdapter-Pure is the **pure-Java** implementation of the `kurobridge-ws` WebSocket server as a Paper plugin — no Node.js, no subprocess, no IPC. It shares the protocol contract with the full-line KuroAdapter through the golden fixtures published in `@kuro-bridge/protocol` (v0.4, 16 samples), enforced by conformance tests. Drop `kuroadapter-pure-0.1.0.jar` into `plugins/`; the plugin generates a safe config on first start (random 32-hex token) and refuses to open the listener while the token is empty.
+KuroAdapter-Pure is the **pure-Java** implementation of the `kurobridge-ws` WebSocket server as a Paper plugin — no Node.js, no subprocess, no IPC. It shares the protocol contract with the full-line KuroAdapter through the golden fixtures published in `@kuro-bridge/protocol` (v0.4, 16 samples), enforced by conformance tests. Drop `kuroadapter-pure-1.0.0.jar` into `plugins/`; the plugin generates a safe config on first start (random 32-hex token) and refuses to open the listener while the token is empty.
 
 ```bash
 mise run build && mise run jar

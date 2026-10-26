@@ -38,7 +38,7 @@ KuroAdapter-Pure：KuroBridge 纯净线的**纯 Java Paper 插件**——kurobri
 ```bash
 mise run build      # 门禁：编译 + spotlessCheck + 全部测试（= CI ./gradlew build）
 mise run format     # 格式化修复（spotlessApply；提交前跑）
-mise run jar        # 唯一产物 fat JAR（clean :paper:shadowJar → paper/build/libs/kuroadapter-pure-0.1.0.jar）
+mise run jar        # 唯一产物 fat JAR（clean :paper:shadowJar → paper/build/libs/kuroadapter-pure-1.0.0.jar）
 mise run fixtures   # 金样本机械刷新（需网络；显式任务不挂 build 图，后续手工步骤见任务输出）
 ```
 

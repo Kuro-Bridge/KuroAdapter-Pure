@@ -6,7 +6,7 @@
 
 ```yaml
 name: KuroBridgePure
-version: '0.1.0'
+version: '1.0.0'
 main: com.kurobridge.pure.KuroBridgePurePlugin
 api-version: '1.13'
 load: STARTUP

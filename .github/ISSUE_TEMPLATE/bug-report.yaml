@@ -52,7 +52,7 @@ body:
       value: |
         - 操作系统: <!-- 例如 Windows 11 / Ubuntu 24.04 -->
         - Paper 版本: <!-- 例如 1.21.4 -->
-        - kuroadapter-pure 版本: <!-- 例如 0.1.0 -->
+        - kuroadapter-pure 版本: <!-- 例如 1.0.0 -->
         - Java 版本: <!-- 例如 25 -->
         - 对端与协议版本: <!-- 例如 koishi-plugin-kurobridge 0.2.0 / kurobridge-ws 0.4.0 -->
     validations:
